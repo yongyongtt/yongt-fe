@@ -38,6 +38,24 @@
   --color-hero-via: #052b57;
   --color-hero-to: #0b50d0;
   --color-hero-sub: #bacbde; /* 기준 연도 같은 보조 글자 */
+  --color-hero-dot: #6b96c7; /* 브레드크럼 사이 점 */
+
+  /* 드롭다운·팝오버 열고 닫기 (animate-dropdown-in / animate-dropdown-out) */
+  --animate-dropdown-in: dropdown-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-dropdown-out: dropdown-out 120ms ease-in forwards;
+
+  @keyframes dropdown-in {
+    from {
+      opacity: 0;
+      transform: translateY(-6px) scale(0.97);
+    }
+  }
+  @keyframes dropdown-out {
+    to {
+      opacity: 0;
+      transform: translateY(-4px) scale(0.97);
+    }
+  }
 }
 
 /* 페이지 본문 폭: 1920 화면 기준 1440px, 좁으면 양쪽 32px 여백 */
