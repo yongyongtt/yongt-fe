@@ -26,6 +26,10 @@
 
   --color-danger-5: #fdefec;
   --color-danger-50: #de3412;
+  --color-danger-60: #bd2c0f;
+
+  /* 사각지대 유형 이름 */
+  --color-type-name: #063a74;
 
   --color-success-5: #eaf6ec;
   --color-success-50: #228738;
@@ -77,6 +81,15 @@
     from {
       opacity: 0;
       transform: translateX(40px);
+    }
+  }
+
+  /* 막대가 0에서 원래 길이로 늘어남 */
+  --animate-bar-grow: bar-grow 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  @keyframes bar-grow {
+    from {
+      width: 0;
     }
   }
 }

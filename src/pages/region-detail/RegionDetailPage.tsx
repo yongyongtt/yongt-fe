@@ -1,9 +1,17 @@
 import { useParams } from 'react-router'
+import { CityCompareCard } from '@/features/region-detail/components/CityCompareCard'
+import { LowReliabilityBanner } from '@/features/region-detail/components/LowReliabilityBanner'
 import { RegionDetailError } from '@/features/region-detail/components/RegionDetailError'
 import { RegionHero } from '@/features/region-detail/components/RegionHero'
+import { TypeSummaryCard } from '@/features/region-detail/components/TypeSummaryCard'
+import { UnmatchedTrendCard } from '@/features/region-detail/components/UnmatchedTrendCard'
 import { useRegionOverview } from '@/features/region-detail/hooks'
 import { Card } from '@/shared/components/Card'
 import { usePeriodParams } from '@/shared/hooks/usePeriodParams'
+
+/** 백엔드가 low만 주고 note를 비워 보냈을 때 쓰는 문구 */
+const DEFAULT_LOW_RELIABILITY_NOTE =
+  '이 지역은 택시 호출이 적어 지표 신뢰도가 낮습니다. 결과는 참고용으로만 확인해 주십시오.'
 
 /*
  동네 진단 상세.
@@ -13,6 +21,8 @@ export function RegionDetailPage() {
   const { regionCode = '' } = useParams()
   const { period, setPeriod } = usePeriodParams()
   const overview = useRegionOverview(regionCode, period)
+  const regionName = overview.data?.header.regionName
+  const reliability = overview.data?.reliability
 
   return (
     <>
@@ -30,20 +40,30 @@ export function RegionDetailPage() {
           </Card>
         ) : (
           <>
-            {/* 카드는 위에서부터 차례로 올라오며 나타남. 카드로 바꿔도 animate 클래스는 유지 */}
-            {/* TODO(4단계): 카드로 교체 */}
-            <Placeholder
-              label="사각지대 유형"
-              className="h-[255px] animate-fade-up [animation-delay:160ms]"
+            {/* 카드는 위에서부터 차례로 올라오며 나타남 */}
+            <TypeSummaryCard
+              type={overview.data?.type}
+              period={period}
+              className="animate-fade-up [animation-delay:160ms]"
             />
-            <div className="grid grid-cols-2 gap-6">
-              <Placeholder
-                label="시 평균과 비교"
-                className="h-[536px] animate-fade-up [animation-delay:240ms]"
+            {reliability?.low && (
+              <LowReliabilityBanner
+                note={reliability.note ?? DEFAULT_LOW_RELIABILITY_NOTE}
+                className="animate-fade-up [animation-delay:200ms]"
               />
-              <Placeholder
-                label="미배차율 추이"
-                className="h-[536px] animate-fade-up [animation-delay:300ms]"
+            )}
+            <div className="grid grid-cols-2 gap-6">
+              <CityCompareCard
+                regionCode={regionCode}
+                regionName={regionName}
+                period={period}
+                className="animate-fade-up [animation-delay:240ms]"
+              />
+              <UnmatchedTrendCard
+                regionCode={regionCode}
+                regionName={regionName}
+                year={period.year}
+                className="animate-fade-up [animation-delay:300ms]"
               />
             </div>
             {/* TODO(5단계) */}
