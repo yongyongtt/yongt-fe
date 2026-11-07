@@ -35,3 +35,21 @@ export function ChevronDownIcon(props: IconProps) {
     </svg>
   )
 }
+
+export function CheckIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 16 16" width={16} height={16} strokeWidth={1.8} {...base} {...props}>
+      <path d="m3.5 8.5 3 3 6-6.5" />
+    </svg>
+  )
+}
+
+export function AlertCircleIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 36 36" width={36} height={36} strokeWidth={2.4} {...base} {...props}>
+      <circle cx="18" cy="18" r="13.5" />
+      <path d="M18 11.5v8" />
+      <circle cx="18" cy="24.5" r="0.6" fill="currentColor" />
+    </svg>
+  )
+}

@@ -35,20 +35,20 @@ export async function apiGet<T>(path: string, query: Record<string, QueryValue> 
   try {
     res = await fetch(`/api${path}${search}`)
   } catch {
-    throw new ApiError('NETWORK_ERROR', '서버에 연결하지 못했어요.', 0)
+    throw new ApiError('NETWORK_ERROR', '서버에 연결하지 못했습니다.', 0)
   }
 
   let body: ApiResponse<T>
   try {
     body = await res.json()
   } catch {
-    throw new ApiError('INVALID_RESPONSE', '서버 응답을 읽지 못했어요.', res.status)
+    throw new ApiError('INVALID_RESPONSE', '서버 응답을 읽지 못했습니다.', res.status)
   }
 
   if (!body.success || body.data === null) {
     throw new ApiError(
       body.error?.code ?? 'UNKNOWN',
-      body.error?.message ?? '알 수 없는 오류가 발생했어요.',
+      body.error?.message ?? '알 수 없는 오류가 발생했습니다.',
       res.status,
     )
   }

@@ -20,7 +20,7 @@ export function PageHero({ children, className }: PageHeroProps) {
         src={heroDeco}
         alt=""
         aria-hidden
-        className="pointer-events-none absolute top-0 left-[calc(50%+300px)] h-full w-[820px] max-w-none"
+        className="pointer-events-none absolute top-0 left-[calc(50%+300px)] max-w-none animate-hero-deco"
       />
       <div className="relative container-page h-full">{children}</div>
     </section>
