@@ -50,10 +50,6 @@ export function MockRegionMap({
             const regionLabel = `${region.regionName} · ${region.gu} · ${describeScore(region.score)}`
             const level = getVulnerabilityLevel(region.score)
             const selected = selectedRegionCode === region.regionCode
-            const highlighted =
-              selected ||
-              hoveredRegionCode === region.regionCode ||
-              focusedRegionCode === region.regionCode
             return (
               <g
                 key={region.regionCode}
@@ -84,7 +80,7 @@ export function MockRegionMap({
                   className={cx(
                     'transition-colors motion-reduce:transition-none',
                     level?.fill ?? 'fill-gray-20',
-                    highlighted ? 'stroke-primary-70 stroke-[3]' : 'stroke-white stroke-[1.5]',
+                    'stroke-white stroke-[1.5]',
                   )}
                 />
                 <text
@@ -97,11 +93,29 @@ export function MockRegionMap({
                     level?.text ?? 'fill-gray-90',
                   )}
                 >
-                  {selected ? `✓ ${region.regionName}` : region.regionName}
+                  {region.regionName}
                 </text>
               </g>
             )
           })}
+          {/* 이웃 도형이 강조선을 덮지 않도록 모든 지역을 그린 뒤 테두리를 겹친다. */}
+          <g aria-hidden="true" className="pointer-events-none">
+            {visibleShapes
+              .filter(
+                (shape) =>
+                  shape.regionCode === selectedRegionCode ||
+                  shape.regionCode === hoveredRegionCode ||
+                  shape.regionCode === focusedRegionCode,
+              )
+              .map((shape) => (
+                <polygon
+                  key={shape.regionCode}
+                  points={shape.points.map((point) => point.join(',')).join(' ')}
+                  vectorEffect="non-scaling-stroke"
+                  className="fill-none stroke-primary-70 stroke-[3]"
+                />
+              ))}
+          </g>
         </svg>
       </div>
       <div className="pointer-events-none absolute top-3 left-3 max-w-[calc(100%-24px)] rounded-lg border border-gray-10 bg-white px-3 py-2 text-xs leading-5 text-gray-60 sm:top-4 sm:left-4 sm:text-sm">

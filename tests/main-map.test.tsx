@@ -63,7 +63,9 @@ test('지도는 선택 상태·지역명·0점을 노출하고 점수 없음은 
   const zero = render(0)
   const missing = render(null)
   assert.ok(zero.includes('aria-pressed="true"'))
-  assert.ok(zero.includes('✓ 원삼면'))
+  assert.ok(!zero.includes('✓'))
+  // 강조선을 라벨을 포함한 지역 도형 뒤에 그려 이웃 경계선이 덮지 않게 한다.
+  assert.ok(zero.indexOf('stroke-primary-70') > zero.indexOf('</text>'))
   assert.ok(zero.includes('0점 · 매우 낮음'))
   assert.ok(zero.includes('fill-map-heat-1'))
   assert.ok(missing.includes('점수 데이터 없음'))
