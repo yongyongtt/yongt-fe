@@ -36,6 +36,14 @@ export function ChevronDownIcon(props: IconProps) {
   )
 }
 
+export function CloseIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 16 16" width={16} height={16} strokeWidth={1.8} {...base} {...props}>
+      <path d="m3.5 3.5 9 9m0-9-9 9" />
+    </svg>
+  )
+}
+
 export function CheckIcon(props: IconProps) {
   return (
     <svg viewBox="0 0 16 16" width={16} height={16} strokeWidth={1.8} {...base} {...props}>
