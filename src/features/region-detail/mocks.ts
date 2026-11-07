@@ -295,6 +295,8 @@ function gapRecommendation(region: MockRegion): Recommendation {
           `버스 정류장 수 ${stops}개 (평균 ${CITY.stops}개)`,
           `고령인구 비율 ${elderly}% (평균 ${CITY.elderly}%)`,
         ],
+        // together 형태는 아직 미정. '함께 추천된 대안' 칸 확인용 예시
+        together: '행복택시: 똑버스가 닿지 않는 시간대를 보완해요',
       }),
       option({
         mode: 'HAPPY_TAXI',

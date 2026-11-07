@@ -37,6 +37,9 @@
   --color-warning-5: #fff3db;
   --color-warning-50: #ffb114;
 
+  /* AI 배지 그라데이션 시작색 (끝은 primary-50) */
+  --color-ai-from: #3fa654;
+
   /* 히어로(파란 배경) 전용 */
   --color-hero-from: #031f3f;
   --color-hero-via: #052b57;

@@ -1,4 +1,5 @@
 import { useParams } from 'react-router'
+import { AiSolutionCard } from '@/features/region-detail/components/ai/AiSolutionCard'
 import { CityCompareCard } from '@/features/region-detail/components/CityCompareCard'
 import { LowReliabilityBanner } from '@/features/region-detail/components/LowReliabilityBanner'
 import { RegionDetailError } from '@/features/region-detail/components/RegionDetailError'
@@ -66,22 +67,16 @@ export function RegionDetailPage() {
                 className="animate-fade-up [animation-delay:300ms]"
               />
             </div>
-            {/* TODO(5단계) */}
-            <Placeholder
-              label="인공지능(AI) 추천 해결방안"
-              className="h-[620px] animate-fade-up [animation-delay:380ms]"
+            <AiSolutionCard
+              key={regionCode}
+              regionCode={regionCode}
+              regionName={regionName}
+              year={period.year}
+              className="animate-fade-up [animation-delay:380ms]"
             />
           </>
         )}
       </div>
     </>
-  )
-}
-
-function Placeholder({ label, className }: { label: string; className: string }) {
-  return (
-    <Card className={`p-9 ${className}`}>
-      <p className="text-[22px] font-bold text-gray-30">{label}</p>
-    </Card>
   )
 }
