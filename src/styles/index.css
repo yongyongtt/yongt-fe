@@ -1,0 +1,53 @@
+@import 'tailwindcss';
+
+/*
+ * 디자인 토큰 (KRDS 디자인 시스템 색상 기준)
+ */
+@theme {
+  --font-sans: 'Noto Sans KR', system-ui, sans-serif;
+
+  --color-gray-0: #ffffff;
+  --color-gray-5: #f4f5f6;
+  --color-gray-10: #e6e8ea;
+  --color-gray-20: #cdd1d5;
+  --color-gray-30: #b1b8be;
+  --color-gray-40: #8a949e;
+  --color-gray-50: #6d7882;
+  --color-gray-60: #58616a;
+  --color-gray-70: #464c53;
+  --color-gray-80: #33363d;
+  --color-gray-90: #1e2124;
+
+  --color-primary-5: #ecf2fe;
+  --color-primary-10: #d8e5fd;
+  --color-primary-50: #256ef4;
+  --color-primary-60: #0b50d0;
+  --color-primary-70: #083891;
+
+  --color-danger-5: #fdefec;
+  --color-danger-50: #de3412;
+
+  --color-success-5: #eaf6ec;
+  --color-success-50: #228738;
+
+  --color-warning-5: #fff3db;
+  --color-warning-50: #ffb114;
+
+  /* 히어로(파란 배경) 전용 */
+  --color-hero-from: #031f3f;
+  --color-hero-via: #052b57;
+  --color-hero-to: #0b50d0;
+  --color-hero-sub: #bacbde; /* 기준 연도 같은 보조 글자 */
+}
+
+/* 페이지 본문 폭: 1920 화면 기준 1440px, 좁으면 양쪽 32px 여백 */
+@utility container-page {
+  width: min(1440px, 100% - 64px);
+  margin-inline: auto;
+}
+
+@layer base {
+  body {
+    @apply bg-white font-sans text-gray-90 antialiased;
+  }
+}
