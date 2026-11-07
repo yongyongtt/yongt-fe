@@ -16,12 +16,7 @@ export function RegionDetailPage() {
 
   return (
     <>
-      <RegionHero
-        overview={overview.data}
-        isError={overview.isError}
-        period={period}
-        onPeriodChange={setPeriod}
-      />
+      <RegionHero overview={overview.data} period={period} onPeriodChange={setPeriod} />
 
       <div className="relative container-page -mt-9 flex flex-col gap-6 pb-[72px]">
         {overview.error ? (

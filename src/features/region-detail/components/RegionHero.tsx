@@ -4,19 +4,17 @@ import { HeroChip } from '@/shared/components/HeroChip'
 import { ChevronLeftIcon, HomeIcon } from '@/shared/components/icons'
 import { PageHero } from '@/shared/components/PageHero'
 import { PeriodSelect } from '@/shared/components/PeriodSelect'
-import { Skeleton } from '@/shared/components/Skeleton'
 import type { Period } from '@/shared/hooks/usePeriodParams'
 import type { RegionOverview } from '../types'
 
 type RegionHeroProps = {
-  /** 없으면 이름 자리에 로딩 막대 (에러면 빈칸) */
+  /** 없으면(불러오는 중·에러) 이름 자리를 비워 둠 */
   overview?: RegionOverview
-  isError?: boolean
   period: Period
   onPeriodChange: (next: Period) => void
 }
 
-export function RegionHero({ overview, isError, period, onPeriodChange }: RegionHeroProps) {
+export function RegionHero({ overview, period, onPeriodChange }: RegionHeroProps) {
   const navigate = useNavigate()
   const header = overview?.header
 
@@ -61,10 +59,8 @@ export function RegionHero({ overview, isError, period, onPeriodChange }: Region
               </div>
             </>
           ) : (
-            // 제목 줄 높이(53px)를 맞춰서 데이터가 와도 옆 요소가 움직이지 않게 함
-            <div className="ml-4 flex h-[53px] items-center">
-              {!isError && <Skeleton className="h-11 w-[360px] bg-white/15" />}
-            </div>
+            // 제목 줄 높이(53px)만 잡아 둬서 데이터가 와도 옆 요소가 움직이지 않게 함
+            <div className="h-[53px]" />
           )}
         </div>
 

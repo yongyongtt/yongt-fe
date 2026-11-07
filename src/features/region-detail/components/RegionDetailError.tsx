@@ -25,8 +25,8 @@ export function RegionDetailError({
   if (code === 'REGION_NOT_FOUND') {
     return (
       <EmptyState
-        title="지역을 찾을 수 없어요"
-        description="주소가 잘못됐거나 분석 대상이 아닌 지역이에요."
+        title="지역을 찾을 수 없습니다"
+        description="주소가 잘못되었거나 분석 대상이 아닌 지역입니다."
         action={{ label: '메인으로 가기', onClick: () => navigate(paths.main(period)) }}
       />
     )
@@ -35,8 +35,8 @@ export function RegionDetailError({
   if (code === 'PERIOD_NOT_FOUND') {
     return (
       <EmptyState
-        title="이 기간의 데이터가 아직 없어요"
-        description="연간(전체) 데이터로 다시 볼 수 있어요."
+        title="해당 기간의 데이터가 아직 없습니다"
+        description="연간(전체) 데이터로 다시 확인할 수 있습니다."
         action={{
           label: '연간 데이터 보기',
           onClick: () => onPeriodChange({ year: DEFAULT_YEAR, month: null }),
@@ -47,8 +47,8 @@ export function RegionDetailError({
 
   return (
     <EmptyState
-      title="정보를 불러오지 못했어요"
-      description="네트워크 또는 서버 문제예요. 잠시 후 다시 시도해 주세요."
+      title="정보를 불러오지 못했습니다"
+      description="네트워크 또는 서버 문제입니다. 잠시 후 다시 시도해 주십시오."
       action={{ label: '다시 시도', onClick: onRetry }}
     />
   )
