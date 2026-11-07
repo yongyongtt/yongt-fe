@@ -28,7 +28,7 @@ export function TypeGuidePopover({ currentType }: { currentType?: string }) {
             </Popover.Close>
           </div>
           <p className="border-b border-gray-10 px-5 pb-3 text-[13px] text-gray-50">
-            지표가 비슷한 동네끼리 묶고, 묶음마다 이름을 붙였습니다
+            지표가 비슷한 동네끼리 묶고, 묶음마다 이름을 붙였습니다.
           </p>
 
           <ul className="flex flex-col gap-1.5 px-5 pt-4 pb-4">

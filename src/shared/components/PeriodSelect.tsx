@@ -37,7 +37,7 @@ export function PeriodSelect({
         displayLabel={monthLabel(period.month)}
         options={months.map((m) => ({ value: m === null ? ALL : String(m), label: monthLabel(m) }))}
         onChange={(v) => onChange({ year: period.year, month: v === ALL ? null : Number(v) })}
-        note="분석이 완료된 월만 선택할 수 있습니다"
+        note="분석이 완료된 월만 선택할 수 있습니다."
       />
     </div>
   )

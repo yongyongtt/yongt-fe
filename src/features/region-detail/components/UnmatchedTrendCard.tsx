@@ -58,7 +58,7 @@ export function UnmatchedTrendCard({
       ) : isError ? (
         <CardError onRetry={() => refetch()} />
       ) : data.points.length === 0 ? (
-        <EmptyState className="mt-6" title="표시할 데이터가 없습니다" />
+        <EmptyState className="mt-6" title="표시할 데이터가 없습니다." />
       ) : (
         <TrendChart points={data.points} />
       )}
