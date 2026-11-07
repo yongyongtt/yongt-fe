@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter } from 'react-router'
 import { mainKeys } from '../src/features/main/hooks'
+import { SummaryCards } from '../src/features/main/components/SummaryCards'
 import { mockGetDashboard } from '../src/features/main/mocks'
 import { MainPage } from '../src/pages/main/MainPage'
 import { ApiError } from '../src/shared/api/client'
@@ -38,11 +39,29 @@ test('연간/월간 URL과 동일한 Query 데이터를 표시하고 상세 링�
       const search = month === null ? '?year=2025' : '?year=2025&month=2'
       const html = renderPage(client, `/${search}`)
       assert.ok(html.includes(`2025년 ${month === null ? '연간' : '2월'} 데이터를 불러왔습니다.`))
+      assert.ok(html.includes(`>${month === null ? '54' : '57'}</span>`))
       assert.ok(html.includes(`/regions/4146134000${search.replaceAll('&', '&amp;')}`))
     }
   } finally {
     client.clear()
   }
+})
+
+test('KPI는 0점과 점수 데이터 없음을 구분한다', () => {
+  const zero = renderToStaticMarkup(
+    <SummaryCards
+      isPending={false}
+      summary={{ totalRegions: 0, vulnerableRegions: 0, averageVulnerabilityScore: 0 }}
+    />,
+  )
+  const missing = renderToStaticMarkup(
+    <SummaryCards
+      isPending={false}
+      summary={{ totalRegions: 0, vulnerableRegions: 0, averageVulnerabilityScore: null }}
+    />,
+  )
+  assert.ok(!zero.includes('데이터 없음'))
+  assert.ok(missing.includes('데이터 없음'))
 })
 
 test('지원하지 않는 URL 기간은 자동 변경하지 않고 연간 조회 복구 동작을 표시한다', () => {
