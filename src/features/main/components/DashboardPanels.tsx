@@ -1,21 +1,26 @@
 import { Card } from '@/shared/components/Card'
+import type { Period } from '@/shared/hooks/usePeriodParams'
+import { RegionMapCard } from './RegionMapCard'
 
-/** 각 기능 브랜치에서 채울 기본 배치. 아직 작동하지 않는 조작 버튼은 표시하지 않는다. */
-export function DashboardPanels() {
+type DashboardPanelsProps = {
+  period: Period
+  selectedRegionCode: string | null
+  onSelectRegion: (regionCode: string) => void
+}
+
+/** 우측 패널은 후속 미리보기 기능에서 선택 지역 코드를 받아 연결한다. */
+export function DashboardPanels({
+  period,
+  selectedRegionCode,
+  onSelectRegion,
+}: DashboardPanelsProps) {
   return (
     <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1000fr)_minmax(0,416fr)]">
-      <Card className="flex min-h-[480px] min-w-0 flex-col xl:min-h-[816px]">
-        <h2 className="border-b border-gray-10 px-7 py-5 text-lg font-bold">종합 취약도</h2>
-        <div className="m-7 flex flex-1 items-center justify-center rounded-[10px] border border-gray-10 bg-gray-5 p-6 text-center">
-          <div>
-            <p className="font-bold text-gray-70">지역별 취약도 지도</p>
-            <p className="mt-2 text-sm leading-6 text-gray-50">지도를 준비하고 있습니다.</p>
-          </div>
-        </div>
-        <p className="px-7 pb-6 text-[13px] leading-5 text-gray-50">
-          지도는 시연용 가상 도형으로 제공될 예정입니다.
-        </p>
-      </Card>
+      <RegionMapCard
+        period={period}
+        selectedRegionCode={selectedRegionCode}
+        onSelectRegion={onSelectRegion}
+      />
       <Card className="flex min-h-[400px] min-w-0 flex-col xl:min-h-[816px]">
         <div className="border-b border-gray-10 px-6 pt-6 pb-7">
           <div className="flex flex-wrap items-center gap-3">
