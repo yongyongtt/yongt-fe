@@ -24,7 +24,7 @@ export function RegionHero({ overview, isError, period, onPeriodChange }: Region
     <PageHero className="h-[217px]">
       <nav
         aria-label="현재 위치"
-        className="flex items-center gap-2 pt-9 text-sm tracking-[-0.01em]"
+        className="flex animate-fade-up items-center gap-2 pt-9 text-sm tracking-[-0.01em]"
       >
         <HomeIcon className="text-white" />
         <Link to={paths.main(period)} className="text-hero-sub hover:text-white">
@@ -36,7 +36,7 @@ export function RegionHero({ overview, isError, period, onPeriodChange }: Region
         </span>
       </nav>
 
-      <div className="mt-7 flex items-center justify-between">
+      <div className="mt-7 flex animate-fade-up items-center justify-between [animation-delay:80ms]">
         <div className="flex items-center">
           <button
             type="button"
@@ -50,10 +50,11 @@ export function RegionHero({ overview, isError, period, onPeriodChange }: Region
           {header ? (
             <>
               <title>{`${header.regionName} · 용인 교통 사각지대 진단`}</title>
-              <h1 className="ml-4 text-[44px] leading-[53px] font-bold tracking-[-0.03em] text-white">
+              {/* 데이터가 늦게 와도 이름·칩이 부드럽게 나타나게 함 */}
+              <h1 className="ml-4 animate-fade-in text-[44px] leading-[53px] font-bold tracking-[-0.03em] text-white">
                 {header.regionName}
               </h1>
-              <div className="ml-[23px] flex gap-2">
+              <div className="ml-[23px] flex animate-fade-in gap-2 [animation-delay:120ms]">
                 <HeroChip>{header.gu}</HeroChip>
                 <HeroChip variant="danger">종합 취약도 {header.score}점</HeroChip>
                 <HeroChip variant="light">우선순위 {header.rank}위</HeroChip>
