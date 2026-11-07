@@ -63,7 +63,6 @@ git push -u origin feature/main-map
 ```
 
 - 깃허브에서 작업 브랜치 → `develop`으로 PR
-- 다른 한 명이 확인 후 합침
 - 합친 브랜치는 삭제
 
 ### 커밋 메시지
