@@ -55,7 +55,7 @@ export function PriorityRanking({
                   aria-pressed={selectedRegionCode === region.regionCode}
                   aria-label={`${region.regionName} · ${region.gu} · ${region.score}점 · ${region.rank}위`}
                   onClick={() => onSelectRegion(region.regionCode)}
-                  className="flex min-h-[57px] w-full items-center gap-3 px-6 py-3 text-left outline-none hover:bg-primary-5 focus-visible:bg-primary-5 focus-visible:ring-2 focus-visible:ring-primary-50 focus-visible:ring-inset"
+                  className="flex min-h-[57px] w-full items-center gap-2 px-4 py-3 text-left outline-none hover:bg-primary-5 focus-visible:bg-primary-5 focus-visible:ring-2 focus-visible:ring-primary-50 focus-visible:ring-inset sm:gap-3 sm:px-6"
                 >
                   <span
                     className={cx(
@@ -67,15 +67,13 @@ export function PriorityRanking({
                   >
                     {region.rank}
                   </span>
-                  <span className="min-w-0 flex-1">
+                  <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-1.5">
                     <span className="font-bold break-keep">{region.regionName}</span>
-                    <span className="ml-1.5 text-[13px] whitespace-nowrap text-gray-50">
-                      {region.gu}
-                    </span>
+                    <span className="text-[13px] whitespace-nowrap text-gray-50">{region.gu}</span>
                   </span>
                   <span
                     aria-hidden
-                    className="hidden h-1.5 w-[110px] shrink-0 overflow-hidden rounded-full bg-gray-10 min-[1600px]:block"
+                    className="block h-1.5 w-[30%] max-w-[110px] min-w-9 shrink-0 overflow-hidden rounded-full bg-gray-10"
                   >
                     <span
                       className="block h-full rounded-full bg-danger-50"

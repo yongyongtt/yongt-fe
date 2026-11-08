@@ -4,7 +4,8 @@ export type DashboardSelection = {
   mode: 'ranking' | 'preview'
   focusRequest: MapFocusRequest | null
 }
-export type SelectionAction = { type: 'select'; regionCode: string } | { type: 'back' }
+export type SelectionAction =
+  { type: 'select'; regionCode: string; focusMap: boolean } | { type: 'back' }
 
 export const initialSelection: DashboardSelection = {
   regionCode: null,
@@ -20,9 +21,11 @@ export function selectionReducer(
   return {
     regionCode: action.regionCode,
     mode: 'preview',
-    focusRequest: {
-      regionCode: action.regionCode,
-      version: (state.focusRequest?.version ?? 0) + 1,
-    },
+    focusRequest: action.focusMap
+      ? {
+          regionCode: action.regionCode,
+          version: (state.focusRequest?.version ?? 0) + 1,
+        }
+      : state.focusRequest,
   }
 }

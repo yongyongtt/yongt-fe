@@ -183,10 +183,12 @@ export function MockRegionMap({
                   )}
                   onPointerEnter={() => setHoveredRegionCode(region.regionCode)}
                   onPointerLeave={() => setHoveredRegionCode(null)}
-                  onFocus={() => {
+                  onFocus={(event) => {
                     setHoveredRegionCode(null)
                     setFocusedRegionCode(region.regionCode)
-                    onFocusRegion?.(region.regionCode)
+                    // 클릭 초점으로 도형이 움직이지 않게 하고 키보드 탐색 때만 화면 안으로 이동한다.
+                    if (event.currentTarget.matches(':focus-visible'))
+                      onFocusRegion?.(region.regionCode)
                   }}
                   onBlur={() => setFocusedRegionCode(null)}
                   onClick={() => {
