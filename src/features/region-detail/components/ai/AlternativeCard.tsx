@@ -25,7 +25,7 @@ export function AlternativeCard({ option, open, onToggle, panelId }: Alternative
       aria-expanded={open}
       aria-controls={panelId}
       className={cx(
-        'flex min-h-[244px] flex-1 flex-col rounded-xl px-6 pt-[22px] pb-6 text-left transition-[box-shadow,translate] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_16px_rgba(3,31,63,0.1)] focus-visible:ring-2 focus-visible:ring-primary-50 focus-visible:ring-offset-2 focus-visible:outline-none',
+        'flex flex-1 flex-col rounded-xl px-5 pt-5 pb-5 text-left transition-[box-shadow,translate] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_16px_rgba(3,31,63,0.1)] focus-visible:ring-2 focus-visible:ring-primary-50 focus-visible:ring-offset-2 focus-visible:outline-none lg:min-h-[244px] lg:px-6 lg:pt-[22px] lg:pb-6',
         s.box,
         open && 'shadow-[0_8px_16px_rgba(3,31,63,0.12)]',
       )}
@@ -40,7 +40,12 @@ export function AlternativeCard({ option, open, onToggle, panelId }: Alternative
           </span>
         )}
       </span>
-      <span className={cx('mt-4 text-[22px] font-bold tracking-[-0.02em]', s.name)}>
+      <span
+        className={cx(
+          'mt-3 text-[20px] font-bold tracking-[-0.02em] lg:mt-4 lg:text-[22px]',
+          s.name,
+        )}
+      >
         {option.name}
       </span>
       {option.subtitle && (
@@ -48,7 +53,7 @@ export function AlternativeCard({ option, open, onToggle, panelId }: Alternative
           {option.subtitle}
         </span>
       )}
-      <span className={cx('mt-4 text-[15px] leading-6 tracking-[-0.01em]', s.desc)}>
+      <span className={cx('mt-3 text-[15px] leading-6 tracking-[-0.01em] lg:mt-4', s.desc)}>
         {option.desc}
       </span>
       <span className={cx('mt-auto flex items-center gap-1 pt-4 text-sm font-medium', s.accent)}>

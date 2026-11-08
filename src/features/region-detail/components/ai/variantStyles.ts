@@ -11,6 +11,8 @@ export const VARIANT_STYLE: Record<
     desc: string
     accent: string
     tag: string
+    /** 모바일 상세 패널은 세로로 길어 그라데이션 끝(흰색)에 흰 상자가 묻혀서 단색 배경 */
+    panelMobile: string
   }
 > = {
   recommended: {
@@ -21,6 +23,7 @@ export const VARIANT_STYLE: Record<
     desc: 'text-gray-70',
     accent: 'text-primary-60',
     tag: 'border-primary-50 text-primary-50',
+    panelMobile: 'max-lg:bg-none max-lg:bg-primary-5',
   },
   keep: {
     box: 'border-2 border-success-50 bg-linear-to-b from-success-5 to-white to-70%',
@@ -30,6 +33,7 @@ export const VARIANT_STYLE: Record<
     desc: 'text-gray-70',
     accent: 'text-success-50',
     tag: 'border-success-50 text-success-50',
+    panelMobile: 'max-lg:bg-none max-lg:bg-success-5',
   },
   excluded: {
     box: 'border border-gray-10 bg-gray-5',
@@ -39,5 +43,6 @@ export const VARIANT_STYLE: Record<
     desc: 'text-gray-50',
     accent: 'text-gray-60',
     tag: 'border-gray-30 text-gray-60',
+    panelMobile: '',
   },
 }

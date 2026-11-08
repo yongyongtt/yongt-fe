@@ -22,7 +22,7 @@ export function PeriodSelect({
   years = AVAILABLE_YEARS,
 }: PeriodSelectProps) {
   return (
-    <div className="flex gap-2.5">
+    <div className="grid grid-cols-2 gap-2 lg:flex lg:gap-2.5">
       <HeroSelect
         label="기준 연도"
         value={String(period.year)}
@@ -56,13 +56,15 @@ type HeroSelectProps = {
 function HeroSelect({ label, value, displayLabel, options, onChange, note }: HeroSelectProps) {
   return (
     <Select.Root value={value} onValueChange={onChange}>
-      <Select.Trigger className="group flex h-12 items-center rounded-lg border border-white/28 bg-white/10 px-4 transition-colors outline-none hover:bg-white/15 focus-visible:ring-2 focus-visible:ring-white/60 data-[state=open]:border-white/50 data-[state=open]:bg-white/15">
-        <span className="text-sm tracking-[-0.01em] text-hero-sub">{label}</span>
-        <span className="ml-2.5 text-base font-bold tracking-[-0.01em] text-white">
+      <Select.Trigger className="group flex h-11 min-w-0 items-center rounded-lg border border-white/28 bg-white/10 px-3 transition-colors outline-none hover:bg-white/15 focus-visible:ring-2 focus-visible:ring-white/60 data-[state=open]:border-white/50 data-[state=open]:bg-white/15 lg:h-12 lg:px-4">
+        <span className="shrink-0 text-[13px] tracking-[-0.01em] text-hero-sub lg:text-sm">
+          {label}
+        </span>
+        <span className="ml-2 truncate text-[15px] font-bold tracking-[-0.01em] text-white lg:ml-2.5 lg:text-base">
           {displayLabel}
         </span>
         <Select.Icon asChild>
-          <ChevronDownIcon className="ml-[22px] text-white transition-transform duration-200 group-data-[state=open]:rotate-180 motion-reduce:transition-none" />
+          <ChevronDownIcon className="ml-auto shrink-0 pl-1 text-white transition-transform duration-200 group-data-[state=open]:rotate-180 motion-reduce:transition-none lg:ml-[22px] lg:pl-0" />
         </Select.Icon>
       </Select.Trigger>
 
@@ -71,6 +73,7 @@ function HeroSelect({ label, value, displayLabel, options, onChange, note }: Her
           position="popper"
           align="end"
           sideOffset={8}
+          collisionPadding={16}
           className="z-50 w-(--radix-select-trigger-width) min-w-[200px] origin-(--radix-select-content-transform-origin) rounded border border-gray-20 bg-white shadow-[0_4px_6px_rgba(30,33,36,0.1)] data-[state=closed]:animate-dropdown-out data-[state=open]:animate-dropdown-in motion-reduce:animate-none"
         >
           <p aria-hidden className="px-4 pt-3 pb-1.5 text-xs font-bold text-gray-50">

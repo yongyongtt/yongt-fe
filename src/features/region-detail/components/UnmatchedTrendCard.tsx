@@ -12,6 +12,7 @@ import {
 import { Card } from '@/shared/components/Card'
 import { EmptyState } from '@/shared/components/EmptyState'
 import { Skeleton } from '@/shared/components/Skeleton'
+import { useMediaQuery } from '@/shared/hooks/useMediaQuery'
 import { cx } from '@/shared/utils/cx'
 import { useUnmatchedTrend } from '../hooks'
 import type { TrendPoint } from '../types'
@@ -43,9 +44,11 @@ export function UnmatchedTrendCard({
   const { data, isPending, isError, refetch } = useUnmatchedTrend(regionCode, year)
 
   return (
-    <Card className={cx('min-h-[536px] px-8 pt-7 pb-8', className)}>
-      <h2 className="text-[22px] font-bold tracking-[-0.02em] text-gray-90">미배차율 추이</h2>
-      <div className="mt-[18px] flex items-center justify-between text-sm">
+    <Card className={cx('px-5 pt-6 pb-6 lg:min-h-[536px] lg:px-8 lg:pt-7 lg:pb-8', className)}>
+      <h2 className="text-[19px] font-bold tracking-[-0.02em] text-gray-90 lg:text-[22px]">
+        미배차율 추이
+      </h2>
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-[13px] lg:mt-[18px] lg:text-sm">
         <p className="text-gray-50">택시를 불렀지만 배차되지 않은 비율 (월별)</p>
         <div className="flex items-center gap-4 text-gray-60">
           <LegendLine color={COLOR.region} label={regionName ?? '이 지역'} />
@@ -54,7 +57,7 @@ export function UnmatchedTrendCard({
       </div>
 
       {isPending ? (
-        <Skeleton className="mt-6 h-[300px] w-full" />
+        <Skeleton className="mt-6 h-[240px] w-full sm:h-[300px]" />
       ) : isError ? (
         <CardError onRetry={() => refetch()} />
       ) : data.points.length === 0 ? (
@@ -75,9 +78,11 @@ function TrendChart({ points }: { points: TrendPoint[] }) {
   const [min, max] = yRange(points)
   const ticks = Array.from({ length: (max - min) / 10 + 1 }, (_, i) => min + i * 10)
   const lastIndex = data.length - 1
+  // 좁은 화면은 월 라벨이 겹쳐서 한 칸씩 건너뛰어 표시
+  const isWide = useMediaQuery('(min-width: 640px)')
 
   return (
-    <div className="mt-6 h-[300px]">
+    <div className="mt-6 h-[240px] sm:h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={data} margin={{ top: 8, right: 22, bottom: 0, left: -12 }}>
           <defs>
@@ -89,7 +94,7 @@ function TrendChart({ points }: { points: TrendPoint[] }) {
           <CartesianGrid vertical={false} stroke={COLOR.grid} />
           <XAxis
             dataKey="label"
-            interval={0}
+            interval={isWide ? 0 : 1}
             tickLine={false}
             axisLine={{ stroke: COLOR.grid }}
             tick={{ fill: COLOR.axis, fontSize: 12 }}
