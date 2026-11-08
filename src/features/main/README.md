@@ -1,5 +1,15 @@
 # 메인 데이터 계층
 
+## 실제 API 연결 (2026-11-08)
+
+- Swagger 및 제공된 `frontend-api-guide.md`의 메인 API 1~3을 실제 서버 응답과 대조했다. README 규칙대로 공통 `VITE_USE_MOCK=false`이면 실제 API를 사용하고, `true`이면 기존 목업을 사용한다. 메인 전용 스위치는 사용하지 않는다. 아래 목업 범위 설명은 목업 모드에만 해당한다.
+- 메인 API 1~3은 `adapters.ts`에서 서버 DTO를 화면 모델로 변환한다. 대시보드 `summary.regionCount/vulnerableCount/avgScore`, `top10`, 기간의 `availableYears/availableMonths/updatedAt`을 보존한다. 미리보기는 API 3의 `recommended/summary/isKeep`을 사용하며, 응답에 없는 신뢰도나 추천 상세를 임의로 생성하지 않는다.
+- 실제 지도는 `public/data/yongin-dong.geojson`의 38개 경계를 `properties.code`와 API 2의 `regionCode`로 연결한다. 경계는 기간과 별개로 캐시하며 실패 시 가상 지도로 대체하지 않는다. 지도 점수의 소수 첫째 자리를 유지한다.
+- 취약지역 KPI는 API의 50점 이상 집계를 그대로 사용한다. 지도 색상은 확정된 20점 간격 구간이며 KPI 판정과 구분한다.
+- 메인 `api.ts`에서 공통 `USE_MOCK`을 분기하고 `apiGet`을 직접 호출한다. 반환된 data만 `adapters.ts`에서 화면 모델로 변환한다. 공통 클라이언트와 오류 코드는 변경하지 않는다. 메인 API 오류는 전용 `components/ApiFailureState`로 표시하고 다시 시도를 제공한다. 기간/지역 404와 추천 없음은 별도로 처리한다. 오류 시 이전 기간의 수치를 현재 값으로 표시하지 않는다.
+- 작업 브랜치 순서: `feature/main-api-connection` → `feature/main-live-api` → `feature/yongin-boundary-map`. 각 브랜치는 develop에서 생성하고 미병합 선행 커밋을 가져온다. PR 진행 시 선행 기능을 먼저 병합하고 중복 커밋을 제외해야 한다. 상세 API·상세 컴포넌트·공통 API 클라이언트는 변경하지 않는다.
+- 개발은 공통 `VITE_API_PROXY_TARGET=http://43.203.57.74`, Vercel은 `/api/:path*` rewrite를 사용한다. 공통 `VITE_USE_MOCK=false`로 실제 데이터를 표시한다. 이 스위치는 기존 상세 코드에도 적용되지만 상세 파일은 변경하지 않는다. Vercel 환경 변수에 `VITE_USE_MOCK=true`가 있으면 false로 바꾸고 재배포한다.
+
 - `api.ts`: README에 명시된 dashboard/map/preview 경로와 `USE_MOCK` 분기.
 - `hooks.ts`: 기간별 Query 캐시, 선택 전 미리보기 조회 비활성화. 이전 기간/지역 데이터를 placeholder로 유지하지 않는다.
 - `mocks.ts`: 상세의 기존 목업 함수를 재사용한다. 상세 및 shared 파일은 변경하지 않는다.

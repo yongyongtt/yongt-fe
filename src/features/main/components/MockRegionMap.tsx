@@ -6,7 +6,15 @@ import { describeScore, getVulnerabilityLevel } from '../map/vulnerability'
 import type { DashboardRegion } from '../types'
 import { VulnerabilityLegend } from './VulnerabilityLegend'
 import { MapControls } from './MapControls'
-import { clampViewport, INITIAL_VIEWPORT, zoomViewport, type MapViewport } from '../map/viewport'
+import { boundaryPath } from '../map/boundaries'
+import {
+  clampViewport,
+  INITIAL_VIEWPORT,
+  MAP_WIDTH,
+  MAP_HEIGHT,
+  zoomViewport,
+  type MapViewport,
+} from '../map/viewport'
 
 type MockRegionMapProps = {
   regions: DashboardRegion[]
@@ -18,6 +26,7 @@ type MockRegionMapProps = {
   panMode: boolean
   onTogglePan: () => void
   onFocusRegion?: (regionCode: string) => void
+  isRealMap?: boolean
 }
 
 export function MockRegionMap({
@@ -30,6 +39,7 @@ export function MockRegionMap({
   panMode,
   onTogglePan,
   onFocusRegion,
+  isRealMap = false,
 }: MockRegionMapProps) {
   const id = useId()
   const svg = useRef<SVGSVGElement>(null)
@@ -38,6 +48,27 @@ export function MockRegionMap({
   const byCode = new Map(regions.map((region) => [region.regionCode, region]))
   const visibleShapes = shapes.filter((shape) => byCode.has(shape.regionCode))
   const active = byCode.get(hoveredRegionCode ?? focusedRegionCode ?? selectedRegionCode ?? '')
+  // 작은 행정동의 이름이 서로 겹치면 숨기고, 확대하거나 선택한 지역부터 표시한다.
+  const labelCodes = new Set<string>()
+  const labelBoxes: Array<{ x: number; y: number; width: number }> = []
+  const priority = (code: string) =>
+    code === (hoveredRegionCode ?? focusedRegionCode ?? selectedRegionCode) ? 0 : 1
+  for (const shape of [...visibleShapes].sort(
+    (a, b) => priority(a.regionCode) - priority(b.regionCode),
+  )) {
+    const x = shape.labelPosition[0] * viewport.scale + viewport.tx,
+      y = shape.labelPosition[1] * viewport.scale + viewport.ty
+    const width = byCode.get(shape.regionCode)!.regionName.length * 28 + 8
+    if (x < 0 || x > MAP_WIDTH || y < 0 || y > MAP_HEIGHT) continue
+    if (
+      labelBoxes.some(
+        (box) => Math.abs(box.x - x) < (box.width + width) / 2 && Math.abs(box.y - y) < 32,
+      )
+    )
+      continue
+    labelCodes.add(shape.regionCode)
+    labelBoxes.push({ x, y, width })
+  }
   const drag = useRef<{
     pointerId: number
     x: number
@@ -67,13 +98,13 @@ export function MockRegionMap({
       <div
         className="overflow-hidden rounded-[10px] border border-gray-10 bg-gray-5"
         role="group"
-        aria-label="시연용 가상 지역 지도"
+        aria-label={isRealMap ? '용인시 행정동 지도' : '시연용 가상 지역 지도'}
       >
         <svg
           ref={svg}
           viewBox={DEMO_MAP_VIEWBOX}
           className={cx(
-            'block h-[360px] w-full outline-none select-none focus-visible:ring-2 focus-visible:ring-primary-50 focus-visible:ring-inset sm:h-auto',
+            'block h-[360px] w-full outline-none select-none [--map-label-size:28px] focus-visible:ring-2 focus-visible:ring-primary-50 focus-visible:ring-inset lg:h-auto lg:[--map-label-size:14px]',
             panMode
               ? dragging
                 ? 'cursor-grabbing touch-none'
@@ -159,10 +190,14 @@ export function MockRegionMap({
             }
           }}
         >
-          <title id={`${id}-title`}>지역별 종합 취약도 가상 지도</title>
+          <title id={`${id}-title`}>
+            {isRealMap ? '용인시 지역별 종합 취약도 지도' : '지역별 종합 취약도 가상 지도'}
+          </title>
           <desc id={`${id}-description`}>
-            실제 위치나 행정경계가 아닌 시연용 도형입니다. Tab 키로 지역을 탐색하고 Enter 또는
-            Space로 선택하세요.
+            {isRealMap
+              ? '제공된 용인시 행정동 경계입니다. '
+              : '실제 위치나 행정경계가 아닌 시연용 도형입니다. '}
+            Tab 키로 지역을 탐색하고 Enter 또는 Space로 선택하세요.
           </desc>
           <g transform={`translate(${viewport.tx} ${viewport.ty}) scale(${viewport.scale})`}>
             {visibleShapes.map((shape) => {
@@ -202,8 +237,9 @@ export function MockRegionMap({
                   }}
                 >
                   <title>{regionLabel}</title>
-                  <polygon
-                    points={shape.points.map((point) => point.join(',')).join(' ')}
+                  <path
+                    d={boundaryPath(shape)}
+                    fillRule="evenodd"
                     vectorEffect="non-scaling-stroke"
                     className={cx(
                       'transition-colors motion-reduce:transition-none',
@@ -211,18 +247,27 @@ export function MockRegionMap({
                       'stroke-white stroke-[1.5]',
                     )}
                   />
-                  <text
-                    x={shape.labelPosition[0]}
-                    y={shape.labelPosition[1]}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    className={cx(
-                      'pointer-events-none text-[24px] font-bold sm:text-lg',
-                      level?.text ?? 'fill-gray-90',
-                    )}
-                  >
-                    {region.regionName}
-                  </text>
+                  {(!isRealMap || labelCodes.has(shape.regionCode)) && (
+                    <text
+                      x={shape.labelPosition[0]}
+                      y={shape.labelPosition[1]}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      className={cx(
+                        isRealMap
+                          ? 'pointer-events-none font-bold'
+                          : 'pointer-events-none text-[24px] font-bold sm:text-lg',
+                        level?.text ?? 'fill-gray-90',
+                      )}
+                      style={
+                        isRealMap
+                          ? { fontSize: `calc(var(--map-label-size) / ${viewport.scale})` }
+                          : undefined
+                      }
+                    >
+                      {region.regionName}
+                    </text>
+                  )}
                 </g>
               )
             })}
@@ -236,9 +281,10 @@ export function MockRegionMap({
                     shape.regionCode === focusedRegionCode,
                 )
                 .map((shape) => (
-                  <polygon
+                  <path
                     key={shape.regionCode}
-                    points={shape.points.map((point) => point.join(',')).join(' ')}
+                    d={boundaryPath(shape)}
+                    fillRule="evenodd"
                     vectorEffect="non-scaling-stroke"
                     className="fill-none stroke-primary-70 stroke-[3]"
                   />
@@ -264,7 +310,11 @@ export function MockRegionMap({
             {selectedRegionCode === active.regionCode ? ' · 선택됨' : ''}
           </p>
         ) : (
-          <p>시연용 도형 · 실제 행정경계 아님</p>
+          <p>
+            {isRealMap
+              ? '지역을 선택하면 진단 요약이 표시됩니다.'
+              : '시연용 도형 · 실제 행정경계 아님'}
+          </p>
         )}
       </div>
       <div className="mt-3 w-[258px] max-w-full sm:pointer-events-none sm:absolute sm:bottom-4 sm:left-4 sm:mt-0 sm:max-w-[calc(100%-32px)]">

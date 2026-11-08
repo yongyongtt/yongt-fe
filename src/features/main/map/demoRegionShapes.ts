@@ -2,6 +2,7 @@ export type RegionShape = {
   regionCode: string
   points: ReadonlyArray<readonly [number, number]>
   labelPosition: readonly [number, number]
+  rings?: ReadonlyArray<ReadonlyArray<readonly [number, number]>>
 }
 
 export const DEMO_MAP_VIEWBOX = '0 0 942 612'
