@@ -30,7 +30,7 @@ test('URL 기간으로 로딩을 표시하고 조회 전에는 상세 링크를 
   }
 })
 
-test('연간/월간 URL과 동일한 Query 데이터를 표시하고 상세 링크에 기간을 유지한다', async () => {
+test('연간/월간 URL과 동일한 Query 데이터를 표시하고 임시 상세 링크는 노출하지 않는다', async () => {
   const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity } } })
   try {
     for (const month of [null, 2]) {
@@ -40,7 +40,8 @@ test('연간/월간 URL과 동일한 Query 데이터를 표시하고 상세 링�
       const html = renderPage(client, `/${search}`)
       assert.ok(html.includes(`2025년 ${month === null ? '연간' : '2월'} 데이터를 불러왔습니다.`))
       assert.ok(html.includes(`>${month === null ? '54' : '57'}</span>`))
-      assert.ok(html.includes(`/regions/4146134000${search.replaceAll('&', '&amp;')}`))
+      assert.ok(!html.includes('상세 페이지 이동 예시'))
+      assert.ok(!html.includes('href="/regions/'))
     }
   } finally {
     client.clear()

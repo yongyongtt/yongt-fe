@@ -1,5 +1,5 @@
 import { useReducer } from 'react'
-import { Link } from 'react-router'
+import { useNavigate } from 'react-router'
 import { paths } from '@/app/paths'
 import { DashboardPanels } from '@/features/main/components/DashboardPanels'
 import { MockDataDisclosure } from '@/features/main/components/MockDataDisclosure'
@@ -17,6 +17,7 @@ import { usePeriodParams } from '@/shared/hooks/usePeriodParams'
 
 /** 지도·검색·목록의 선택과 우측 미리보기 상태를 함께 관리한다. */
 export function MainPage() {
+  const navigate = useNavigate()
   const { period, setPeriod } = usePeriodParams()
   const [selection, dispatch] = useReducer(selectionReducer, initialSelection)
   const dashboard = useDashboard(period)
@@ -93,20 +94,12 @@ export function MainPage() {
             mode={selection.mode}
             onBack={() => dispatch({ type: 'back' })}
             focusRequest={selection.focusRequest}
+            onOpenRegionDetail={(regionCode, selectedPeriod) => {
+              void navigate(paths.regionDetail(regionCode, selectedPeriod))
+            }}
           />
         </div>
         {USE_MOCK && <MockDataDisclosure />}
-        {!dashboard.error && !dashboard.isPending && (
-          <p className="mt-2 text-gray-60">
-            상세 페이지 이동 예시:{' '}
-            <Link
-              to={paths.regionDetail('4146134000', period)}
-              className="font-medium text-primary-60 underline"
-            >
-              원삼면 상세 보기
-            </Link>
-          </p>
-        )}
       </div>
     </>
   )
