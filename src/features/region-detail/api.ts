@@ -1,5 +1,5 @@
 import { apiGet } from '@/shared/api/client'
-import { USE_MOCK } from '@/shared/api/mock'
+import { USE_MOCK_REGION_DETAIL as USE_MOCK } from '@/shared/api/mock'
 import type { Period } from '@/shared/hooks/usePeriodParams'
 import {
   mockGetComparison,
