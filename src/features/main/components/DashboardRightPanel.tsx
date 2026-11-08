@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Card } from '@/shared/components/Card'
-import { EmptyState } from '@/shared/components/EmptyState'
+import { ApiFailureState } from '@/features/main/components/ApiFailureState'
 import { ChevronLeftIcon } from '@/shared/components/icons'
 import { Skeleton } from '@/shared/components/Skeleton'
 import type { Period } from '@/shared/hooks/usePeriodParams'
@@ -32,11 +32,7 @@ function PreviewQuery({
   if (preview.error)
     return (
       <div className="p-4">
-        <EmptyState
-          title="지역 미리보기를 불러오지 못했습니다."
-          description="선택한 지역과 기간을 확인하거나 다시 시도해 주세요."
-          action={{ label: '미리보기 다시 불러오기', onClick: () => void preview.refetch() }}
-        />
+        <ApiFailureState error={preview.error} onRetry={() => void preview.refetch()} />
       </div>
     )
   return (

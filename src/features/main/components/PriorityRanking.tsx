@@ -1,6 +1,7 @@
 import selectRegionIcon from '@/assets/main/select-region.svg'
 import { USE_MOCK } from '@/shared/api/mock'
 import { EmptyState } from '@/shared/components/EmptyState'
+import { ApiFailureState } from '@/features/main/components/ApiFailureState'
 import { Skeleton } from '@/shared/components/Skeleton'
 import { cx } from '@/shared/utils/cx'
 import { useDashboard } from '../hooks'
@@ -33,10 +34,7 @@ export function PriorityRanking({
           </div>
         ) : dashboard.error ? (
           <div className="p-4">
-            <EmptyState
-              title="지역 순위를 불러오지 못했습니다."
-              action={{ label: '순위 다시 불러오기', onClick: () => void dashboard.refetch() }}
-            />
+            <ApiFailureState error={dashboard.error} onRetry={() => void dashboard.refetch()} />
           </div>
         ) : regions.length === 0 ? (
           <div className="p-4">

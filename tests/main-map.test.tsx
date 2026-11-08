@@ -112,7 +112,7 @@ test('지도 카드는 조회 중·오류·빈 지도 상태를 분리한다', (
       fetchStatus: 'idle',
       error: new ApiError('NETWORK_ERROR', '연결 실패', 0),
     })
-    assert.ok(render().includes('지도 다시 불러오기'))
+    assert.ok(render().includes('다시 시도'))
     client.setQueryData<DashboardMap>(mainKeys.map(period), {
       period: { ...period, availableMonths: [null, 2] },
       regions: [],

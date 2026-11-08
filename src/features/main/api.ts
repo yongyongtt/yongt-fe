@@ -2,22 +2,28 @@ import { apiGet } from '@/shared/api/client'
 import { USE_MOCK } from '@/shared/api/mock'
 import type { Period } from '@/shared/hooks/usePeriodParams'
 import { mockGetDashboard, mockGetDashboardMap, mockGetRegionPreview } from './mocks'
-import type { Dashboard, DashboardMap, RegionPreview } from './types'
+import { adaptDashboard, adaptDashboardMap, adaptRegionPreview } from './adapters'
 
-export function fetchDashboard({ year, month }: Period) {
+export async function fetchDashboard({ year, month }: Period) {
   if (USE_MOCK) return mockGetDashboard({ year, month })
-  return apiGet<Dashboard>('/dashboard', { year, month })
+  return adaptDashboard(await apiGet<unknown>('/dashboard', { year, month }))
 }
 
-export function fetchDashboardMap({ year, month }: Period) {
+export async function fetchDashboardMap({ year, month }: Period) {
   if (USE_MOCK) return mockGetDashboardMap({ year, month })
-  return apiGet<DashboardMap>('/dashboard/map', { year, month })
-}
-
-export function fetchRegionPreview(regionCode: string, { year, month }: Period) {
-  if (USE_MOCK) return mockGetRegionPreview(regionCode, { year, month })
-  return apiGet<RegionPreview>(`/regions/${encodeURIComponent(regionCode)}/preview`, {
+  return adaptDashboardMap(await apiGet<unknown>('/dashboard/map', { year, month }), {
     year,
     month,
   })
+}
+
+export async function fetchRegionPreview(regionCode: string, { year, month }: Period) {
+  if (USE_MOCK) return mockGetRegionPreview(regionCode, { year, month })
+  return adaptRegionPreview(
+    await apiGet<unknown>(`/regions/${encodeURIComponent(regionCode)}/preview`, {
+      year,
+      month,
+    }),
+    { year, month },
+  )
 }
