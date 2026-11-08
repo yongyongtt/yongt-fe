@@ -3,6 +3,11 @@ import test from 'node:test'
 import { fetchDashboard, fetchDashboardMap, fetchRegionPreview } from '../src/features/main/api'
 import { ApiError } from '../src/shared/api/client'
 const period = { year: 2025, month: null }
+const responsePeriod = {
+  year: 2025,
+  months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+  type: 'YEAR_ALL',
+}
 const region = { regionCode: '4146125000', regionName: '포곡읍', gu: '처인구', score: 60, rank: 7 }
 test('실제 분기에서 공통 apiGet으로 메인 3개 경로만 호출한다', async () => {
   const original = globalThis.fetch,
@@ -10,13 +15,15 @@ test('실제 분기에서 공통 apiGet으로 메인 3개 경로만 호출한다
   try {
     const bodies = [
       {
-        period: { ...period, availableMonths: [null, 2] },
+        period: responsePeriod,
+        updatedAt: '2026-11-08 20:55',
         summary: { regionCount: 38, vulnerableCount: 9, avgScore: 39.1 },
         top10: [region],
       },
-      { regions: [{ ...region, score: 60.4 }] },
+      { period: responsePeriod, regions: [{ ...region, score: 60 }] },
       {
         ...region,
+        period: responsePeriod,
         type: null,
         isKeep: false,
         recommended: [{ mode: 'DRT', name: '똑버스' }],
@@ -28,7 +35,7 @@ test('실제 분기에서 공통 apiGet으로 메인 3개 경로만 호출한다
       return Response.json({ success: true, data: bodies.shift(), error: null })
     }
     assert.equal((await fetchDashboard(period)).summary.totalRegions, 38)
-    assert.equal((await fetchDashboardMap(period)).regions[0].score, 60.4)
+    assert.equal((await fetchDashboardMap(period)).regions[0].score, 60)
     assert.equal((await fetchRegionPreview(region.regionCode, period)).summary, '추천 요약')
     assert.deepEqual(urls, [
       '/api/dashboard?year=2025',

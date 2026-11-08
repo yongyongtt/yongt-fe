@@ -7,7 +7,42 @@ import {
   invalidApiData as invalid,
 } from '@/features/main/validation'
 import type { Period } from '@/shared/hooks/usePeriodParams'
-import type { Dashboard, DashboardMap, DashboardRegion, RegionPreview } from './types'
+import { getMainAvailableMonths, MAIN_AVAILABLE_YEARS } from './period'
+import type {
+  Dashboard,
+  DashboardMap,
+  DashboardPeriod,
+  DashboardRegion,
+  RegionPreview,
+} from './types'
+
+/** period.months는 현재 응답의 집계 기간이며, 선택 가능한 월 목록으로 사용하지 않는다. */
+export function adaptMainPeriod(value: unknown, requested?: Period): DashboardPeriod {
+  const period = object(value)
+  const year = number(period.year)
+  const months = array(period.months).map(number)
+  const responseType = period.type
+  if (
+    !Number.isInteger(year) ||
+    year <= 0 ||
+    !months.length ||
+    new Set(months).size !== months.length ||
+    months.some((month) => !Number.isInteger(month) || month < 1 || month > 12) ||
+    typeof responseType !== 'string' ||
+    !['YEAR_ALL', 'YEAR_LATEST', 'MONTH'].includes(responseType) ||
+    (responseType !== 'YEAR_ALL' && months.length !== 1)
+  )
+    invalid()
+  const month = responseType === 'MONTH' ? months[0] : null
+  if (requested && (year !== requested.year || month !== requested.month)) invalid()
+  return {
+    year,
+    month,
+    months,
+    responseType: responseType as DashboardPeriod['responseType'],
+    availableMonths: [],
+  }
+}
 
 export function adaptRegion(value: unknown): DashboardRegion {
   const row = object(value)
@@ -19,18 +54,16 @@ export function adaptRegion(value: unknown): DashboardRegion {
     rank: number(row.rank),
   }
 }
-export function adaptDashboard(value: unknown): Dashboard {
+export function adaptDashboard(value: unknown, requested?: Period): Dashboard {
   const data = object(value),
-    period = object(data.period),
     summary = object(data.summary)
+  const period = adaptMainPeriod(data.period, requested)
   return {
     period: {
-      year: number(period.year),
-      month: nullableNumber(period.month),
-      availableMonths: array(period.availableMonths).map(nullableNumber),
-      availableYears:
-        period.availableYears == null ? undefined : array(period.availableYears).map(number),
-      updatedAt: period.updatedAt == null ? null : text(period.updatedAt),
+      ...period,
+      availableMonths: getMainAvailableMonths(period.year),
+      availableYears: MAIN_AVAILABLE_YEARS,
+      updatedAt: data.updatedAt == null ? null : text(data.updatedAt),
     },
     summary: {
       totalRegions: number(summary.regionCount),
@@ -41,9 +74,10 @@ export function adaptDashboard(value: unknown): Dashboard {
   }
 }
 export function adaptDashboardMap(value: unknown, period: Period): DashboardMap {
+  const data = object(value)
   return {
-    period: { ...period, availableMonths: [] },
-    regions: array(object(value).regions).map(adaptRegion),
+    period: adaptMainPeriod(data.period, period),
+    regions: array(data.regions).map(adaptRegion),
   }
 }
 export function adaptRegionPreview(value: unknown, period: Period): RegionPreview {
@@ -52,7 +86,7 @@ export function adaptRegionPreview(value: unknown, period: Period): RegionPrevie
   if (typeof data.isKeep !== 'boolean') invalid()
   return {
     header: adaptRegion(data),
-    period: { ...period, availableMonths: [] },
+    period: adaptMainPeriod(data.period, period),
     type: type ? { name: text(type.name), desc: text(type.desc) } : null,
     recommendation: null,
     isKeep: data.isKeep as boolean,

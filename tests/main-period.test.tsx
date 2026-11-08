@@ -70,14 +70,14 @@ test('지원하지 않는 URL 기간은 자동 변경하지 않고 연간 조회
     defaultOptions: { queries: { retry: false, retryOnMount: false } },
   })
   try {
-    const key = mainKeys.dashboard({ year: 2025, month: 6 })
+    const key = mainKeys.dashboard({ year: 2025, month: 8 })
     const query = client.getQueryCache().build(client, { queryKey: key })
     query.setState({
       status: 'error',
       fetchStatus: 'idle',
-      error: new ApiError('PERIOD_NOT_FOUND', '해당 기간의 데이터가 아직 없습니다.', 404),
+      error: new ApiError('SUITABILITY_NOT_READY', '존재하지 않는 달입니다.', 404),
     })
-    const html = renderPage(client, '/?year=2025&month=6')
+    const html = renderPage(client, '/?year=2025&month=8')
     assert.ok(html.includes('해당 기간의 데이터가 없습니다.'))
     assert.ok(html.includes('기본 연간 조회로 돌아가기'))
     assert.ok(!html.includes('href="/regions/'))
