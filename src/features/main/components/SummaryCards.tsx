@@ -45,10 +45,15 @@ export function SummaryCards({ summary, isPending }: SummaryCardsProps) {
       aria-busy={isPending}
       className="grid gap-6 lg:grid-cols-3"
     >
-      {cards.map((card) => (
+      {cards.map((card, index) => (
         <Card
           key={card.label}
-          className="flex min-h-[143px] items-center gap-[18px] px-7 py-7 shadow-lg shadow-primary-70/5"
+          className={cx(
+            'flex min-h-[143px] animate-fade-up items-center gap-[18px] px-7 py-7 shadow-lg shadow-primary-70/5',
+            ['[animation-delay:160ms]', '[animation-delay:220ms]', '[animation-delay:280ms]'][
+              index
+            ],
+          )}
         >
           <div
             className={cx(

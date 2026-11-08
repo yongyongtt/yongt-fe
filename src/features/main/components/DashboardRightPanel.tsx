@@ -85,7 +85,7 @@ export function DashboardRightPanel({
   }, [showingPreview, selectedRegionCode])
 
   return (
-    <div ref={container} className="min-w-0 self-start">
+    <div ref={container} className="min-w-0 animate-fade-up self-start [animation-delay:380ms]">
       <Card
         className={cx(
           'flex w-full flex-col overflow-hidden',

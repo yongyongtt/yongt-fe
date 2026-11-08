@@ -5,7 +5,7 @@ export function MockDataDisclosure() {
   return (
     <aside
       aria-label="시연용 데이터 안내"
-      className="flex min-h-[52px] items-start gap-3 rounded-[10px] bg-gray-5 px-5 py-4 text-sm leading-5 text-gray-60"
+      className="flex min-h-[52px] animate-fade-up items-start gap-3 rounded-[10px] bg-gray-5 px-5 py-4 text-sm leading-5 text-gray-60 [animation-delay:440ms]"
     >
       <img src={noticeIcon} alt="" aria-hidden className="mt-0.5 shrink-0" />
       <div>

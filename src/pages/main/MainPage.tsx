@@ -38,7 +38,7 @@ export function MainPage() {
             메인 대시보드
           </span>
         </nav>
-        <div className="flex flex-col items-start gap-7 pt-7 pb-24 xl:flex-row xl:justify-between xl:pb-0">
+        <div className="flex animate-fade-up flex-col items-start gap-7 pt-7 pb-24 [animation-delay:80ms] xl:flex-row xl:justify-between xl:pb-0">
           <div className="min-w-0">
             <h1 className="text-[30px] leading-[1.3] font-bold tracking-[-0.03em] text-white lg:text-[40px] lg:leading-[48px]">
               용인시 교통 취약지역 현황
