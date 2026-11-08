@@ -91,3 +91,83 @@ test('네트워크·JSON·백엔드 오류는 기존 코드와 상태를 유지�
   t.mock.timers.tick(15_000)
   assert.ok(signals.every((signal) => !signal.aborted))
 })
+
+test('HTTP 실패에서는 본문이 성공이어도 data를 반환하지 않는다', async (t) => {
+  for (const status of [400, 404, 500, 503]) {
+    t.mock.method(globalThis, 'fetch', async () =>
+      Response.json({ success: true, data: { regionCount: 38 }, error: null }, { status }),
+    )
+    await assert.rejects(apiGet('/dashboard'), { name: 'ApiError', code: 'HTTP_ERROR', status })
+  }
+})
+
+test('성공 응답의 data null은 UNKNOWN 대신 EMPTY_DATA로 구분한다', async (t) => {
+  t.mock.method(globalThis, 'fetch', async () =>
+    Response.json({ success: true, data: null, error: null }),
+  )
+  await assert.rejects(apiGet('/dashboard'), { name: 'ApiError', code: 'EMPTY_DATA', status: 200 })
+})
+
+test('누락되거나 잘못된 공통 응답은 INVALID_RESPONSE로 거부한다', async (t) => {
+  const invalidBodies = [
+    null,
+    [],
+    'not an envelope',
+    {},
+    { success: 'true', data: {}, error: null },
+    { success: 1, data: {}, error: null },
+    { success: true, error: null },
+    { success: true, data: {} },
+    { success: true, data: {}, error: { code: 'ERROR', message: '오류' } },
+    { success: false, data: null, error: null },
+    { success: false, data: {}, error: { code: 'ERROR', message: '오류' } },
+    { success: false, data: null, error: { code: 404, message: '오류' } },
+    { success: false, data: null, error: { code: 'ERROR', message: null } },
+    { success: false, data: null, error: { code: ' ', message: '오류' } },
+  ]
+  for (const body of invalidBodies) {
+    t.mock.method(globalThis, 'fetch', async () => Response.json(body))
+    await assert.rejects(apiGet('/dashboard'), {
+      name: 'ApiError',
+      code: 'INVALID_RESPONSE',
+      status: 200,
+    })
+  }
+})
+
+test('HTTP 실패의 HTML·빈 본문·잘못된 JSON도 HTTP_ERROR와 상태를 전달한다', async (t) => {
+  for (const body of ['<html>Bad Gateway</html>', '', 'null', '{"success":false}']) {
+    t.mock.method(globalThis, 'fetch', async () => new Response(body, { status: 502 }))
+    await assert.rejects(apiGet('/dashboard'), {
+      name: 'ApiError',
+      code: 'HTTP_ERROR',
+      status: 502,
+    })
+  }
+})
+
+test('백엔드 실패 코드는 HTTP 성공·실패 모두에서 메시지와 함께 보존한다', async (t) => {
+  for (const status of [200, 404, 500]) {
+    t.mock.method(globalThis, 'fetch', async () =>
+      Response.json(
+        { success: false, data: null, error: { code: 'PERIOD_NOT_FOUND', message: '기간 없음' } },
+        { status },
+      ),
+    )
+    await assert.rejects(apiGet('/dashboard'), {
+      name: 'ApiError',
+      code: 'PERIOD_NOT_FOUND',
+      message: '기간 없음',
+      status,
+    })
+  }
+})
+
+test('0·false·빈 배열 및 내부 필드의 null은 빈 데이터로 오인하지 않는다', async (t) => {
+  for (const data of [0, false, '', [], { type: null, recommended: null, summary: null }]) {
+    t.mock.method(globalThis, 'fetch', async () =>
+      Response.json({ success: true, data, error: null }),
+    )
+    assert.deepEqual(await apiGet('/dashboard'), data)
+  }
+})

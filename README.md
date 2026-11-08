@@ -134,6 +134,7 @@ navigate(paths.regionDetail(regionCode, period)) // /regions/4146134000?year=202
 
 - 백엔드 응답 `{ success, data, error }`에서 `apiGet`이 `data`만 꺼내 줌. 실패하면 `ApiError`(`code`, `status`)를 던짐
 - 실제 API 요청은 본문 수신까지 15초로 제한하며, 초과하면 요청을 중단하고 `TIMEOUT_ERROR`(`status: 0`)를 던짐. 기존 Query 설정에 따라 한 번 자동 재시도하므로 최종 오류 표시까지는 재시도 대기 시간을 포함해 약 31초가 걸릴 수 있음
+- HTTP 실패는 성공으로 처리하지 않음. 정상 형식의 백엔드 오류는 `code`·`message`·HTTP 상태를 그대로 전달하고, 그 외 HTTP 실패는 `HTTP_ERROR`, 성공 응답의 공통 형식 오류는 `INVALID_RESPONSE`, 성공 응답의 `data: null`은 `EMPTY_DATA`로 구분함. `data` 내부의 기능별 필드 검증은 각 기능에서 담당함
 - 각 기능의 `api.ts`에서 `USE_MOCK`이면 목업을, 아니면 `apiGet`을 부름
 
 ```ts
