@@ -8,7 +8,7 @@ import type { Period } from '@/shared/hooks/usePeriodParams'
 import type { Dashboard, DashboardMap, RegionPreview } from './types'
 import { getPriorityRegions } from './preview'
 
-/** 상세 목업에서 지원하는 코드만 사용. 내용과 기간 검증은 기존 조회 함수를 재사용. */
+/** 상세 목업에서 지원하는 코드만 사용. 내용과 기간 검증은 기존 조회 함수를 재사용한다. */
 const REGION_CODES = ['4146134000', '4146135000', '4146136000', '4146125000', '4146551000'] as const
 
 export const MAIN_MOCK_NOTICE =
@@ -41,7 +41,7 @@ export async function mockGetDashboard(period: Period): Promise<Dashboard> {
         Math.round((regions.reduce((sum, region) => sum + region.score, 0) / regions.length) * 10) /
         10,
     },
-    // 상세의 전체 지역 기준 순위를 보존함. 5개 표본 내 순위로 다시 매기지 않음.
+    // 상세의 전체 지역 기준 순위를 보존한다. 5개 표본 내 순위로 다시 매기지 않는다.
     topRegions: getPriorityRegions(regions),
   }
 }
@@ -55,7 +55,7 @@ export async function mockGetRegionPreview(
   regionCode: string,
   period: Period,
 ): Promise<RegionPreview> {
-  // 지역/기간 오류가 추천 없음으로 덮이지 않도록 overview부터 검증함.
+  // 지역/기간 오류가 추천 없음으로 덮이지 않도록 overview부터 검증한다.
   const overview = await mockGetOverview(regionCode, period)
   let recommendation: RegionPreview['recommendation']
   try {
