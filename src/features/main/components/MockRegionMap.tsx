@@ -1,4 +1,4 @@
-import { useId, useRef, useState, type PointerEvent } from 'react'
+import { useId, useMemo, useRef, useState, type PointerEvent } from 'react'
 import { cx } from '@/shared/utils/cx'
 import type { RegionShape } from '../map/demoRegionShapes'
 import { DEMO_MAP_VIEWBOX } from '../map/demoRegionShapes'
@@ -7,14 +7,9 @@ import type { DashboardRegion } from '../types'
 import { VulnerabilityLegend } from './VulnerabilityLegend'
 import { MapControls } from './MapControls'
 import { boundaryPath } from '../map/boundaries'
-import {
-  clampViewport,
-  INITIAL_VIEWPORT,
-  MAP_WIDTH,
-  MAP_HEIGHT,
-  zoomViewport,
-  type MapViewport,
-} from '../map/viewport'
+import { useMapLabelLayout } from '../map/useMapLabelLayout'
+import { MAP_LABEL_FONT } from '../map/labels'
+import { clampViewport, INITIAL_VIEWPORT, zoomViewport, type MapViewport } from '../map/viewport'
 
 type MockRegionMapProps = {
   regions: DashboardRegion[]
@@ -46,29 +41,12 @@ export function MockRegionMap({
   const [hoveredRegionCode, setHoveredRegionCode] = useState<string | null>(null)
   const [focusedRegionCode, setFocusedRegionCode] = useState<string | null>(null)
   const byCode = new Map(regions.map((region) => [region.regionCode, region]))
-  const visibleShapes = shapes.filter((shape) => byCode.has(shape.regionCode))
+  const visibleShapes = useMemo(() => {
+    const codes = new Set(regions.map((region) => region.regionCode))
+    return shapes.filter((shape) => codes.has(shape.regionCode))
+  }, [shapes, regions])
+  useMapLabelLayout(svg, visibleShapes, viewport.scale, selectedRegionCode, isRealMap)
   const active = byCode.get(hoveredRegionCode ?? focusedRegionCode ?? selectedRegionCode ?? '')
-  // 작은 행정동의 이름이 서로 겹치면 숨기고, 확대하거나 선택한 지역부터 표시한다.
-  const labelCodes = new Set<string>()
-  const labelBoxes: Array<{ x: number; y: number; width: number }> = []
-  const priority = (code: string) =>
-    code === (hoveredRegionCode ?? focusedRegionCode ?? selectedRegionCode) ? 0 : 1
-  for (const shape of [...visibleShapes].sort(
-    (a, b) => priority(a.regionCode) - priority(b.regionCode),
-  )) {
-    const x = shape.labelPosition[0] * viewport.scale + viewport.tx,
-      y = shape.labelPosition[1] * viewport.scale + viewport.ty
-    const width = byCode.get(shape.regionCode)!.regionName.length * 28 + 8
-    if (x < 0 || x > MAP_WIDTH || y < 0 || y > MAP_HEIGHT) continue
-    if (
-      labelBoxes.some(
-        (box) => Math.abs(box.x - x) < (box.width + width) / 2 && Math.abs(box.y - y) < 32,
-      )
-    )
-      continue
-    labelCodes.add(shape.regionCode)
-    labelBoxes.push({ x, y, width })
-  }
   const drag = useRef<{
     pointerId: number
     x: number
@@ -104,7 +82,7 @@ export function MockRegionMap({
           ref={svg}
           viewBox={DEMO_MAP_VIEWBOX}
           className={cx(
-            'block h-[360px] w-full outline-none select-none [--map-label-size:28px] focus-visible:ring-2 focus-visible:ring-primary-50 focus-visible:ring-inset lg:h-auto lg:[--map-label-size:14px]',
+            'block h-[360px] w-full outline-none select-none focus-visible:ring-2 focus-visible:ring-primary-50 focus-visible:ring-inset lg:h-auto',
             panMode
               ? dragging
                 ? 'cursor-grabbing touch-none'
@@ -195,7 +173,7 @@ export function MockRegionMap({
           </title>
           <desc id={`${id}-description`}>
             {isRealMap
-              ? '제공된 용인시 행정동 경계입니다. '
+              ? '용인시 읍·면·동별 종합 취약도를 표시한 지도입니다. '
               : '실제 위치나 행정경계가 아닌 시연용 도형입니다. '}
             Tab 키로 지역을 탐색하고 Enter 또는 Space로 선택하세요.
           </desc>
@@ -247,30 +225,39 @@ export function MockRegionMap({
                       'stroke-white stroke-[1.5]',
                     )}
                   />
-                  {(!isRealMap || labelCodes.has(shape.regionCode)) && (
-                    <text
-                      x={shape.labelPosition[0]}
-                      y={shape.labelPosition[1]}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      className={cx(
-                        isRealMap
-                          ? 'pointer-events-none font-bold'
-                          : 'pointer-events-none text-[24px] font-bold sm:text-lg',
-                        level?.text ?? 'fill-gray-90',
-                      )}
-                      style={
-                        isRealMap
-                          ? { fontSize: `calc(var(--map-label-size) / ${viewport.scale})` }
-                          : undefined
-                      }
-                    >
-                      {region.regionName}
-                    </text>
-                  )}
                 </g>
               )
             })}
+            {/* 지역 도형을 모두 그린 뒤 라벨을 올려 이웃 도형에 가리지 않게 한다. */}
+            <g data-map-labels="true" aria-hidden="true" className="pointer-events-none">
+              {visibleShapes.map((shape) => {
+                const region = byCode.get(shape.regionCode)!
+                const level = getVulnerabilityLevel(region.score)
+                return (
+                  <g
+                    key={region.regionCode}
+                    data-map-label={isRealMap ? region.regionCode : undefined}
+                    transform={`translate(${shape.labelPosition.join(' ')})`}
+                    style={isRealMap ? { visibility: 'hidden' } : undefined}
+                    className="pointer-events-none"
+                    aria-hidden="true"
+                  >
+                    <text
+                      data-region-label={region.regionCode}
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      className={cx(
+                        isRealMap ? 'font-bold' : 'text-[24px] font-bold sm:text-lg',
+                        level?.text ?? 'fill-gray-90',
+                      )}
+                      style={isRealMap ? { fontSize: MAP_LABEL_FONT } : undefined}
+                    >
+                      {region.regionName}
+                    </text>
+                  </g>
+                )
+              })}
+            </g>
             {/* 이웃 도형이 강조선을 덮지 않도록 모든 지역을 그린 뒤 테두리를 겹친다. */}
             <g aria-hidden="true" className="pointer-events-none">
               {visibleShapes

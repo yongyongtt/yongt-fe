@@ -1,6 +1,7 @@
 import { ApiError } from '@/shared/api/client'
 import type { RegionShape } from './demoRegionShapes'
 import { MAP_WIDTH, MAP_HEIGHT } from './viewport'
+import { placeBoundaryLabel } from './labels'
 
 type Feature = {
   properties: { code: string; name: string; gu: string; centerLat: number; centerLng: number }
@@ -73,14 +74,19 @@ export function projectBoundaries(value: unknown): BoundaryShape[] {
     left + (x - minX) * scale,
     top + (y - minY) * scale,
   ]
-  return prepared.map(({ p, rings }) => ({
-    regionCode: p.code,
-    regionName: p.name,
-    gu: p.gu,
-    rings: rings.map((ring) => ring.map(fit)),
-    points: rings.flat().map(fit),
-    labelPosition: fit(project([p.centerLng, p.centerLat])),
-  }))
+  return prepared.map(({ p, rings }) => {
+    const projectedRings = rings.map((ring) => ring.map(fit))
+    const label = placeBoundaryLabel(projectedRings)
+    return {
+      regionCode: p.code,
+      regionName: p.name,
+      gu: p.gu,
+      rings: projectedRings,
+      points: projectedRings.flat(),
+      labelPosition: label.position,
+      labelRadius: label.radius,
+    }
+  })
 }
 
 export async function fetchBoundaries(): Promise<BoundaryShape[]> {

@@ -6,7 +6,7 @@ import { adaptDashboard, adaptDashboardMap, adaptRegionPreview } from './adapter
 
 export async function fetchDashboard({ year, month }: Period) {
   if (USE_MOCK) return mockGetDashboard({ year, month })
-  return adaptDashboard(await apiGet<unknown>('/dashboard', { year, month }))
+  return adaptDashboard(await apiGet<unknown>('/dashboard', { year, month }), { year, month })
 }
 
 export async function fetchDashboardMap({ year, month }: Period) {
