@@ -47,7 +47,7 @@ export function PriorityRanking({
           </div>
         ) : (
           <ol className="divide-y divide-gray-5">
-            {regions.map((region) => (
+            {regions.map((region, index) => (
               <li key={region.regionCode} value={region.rank}>
                 <button
                   type="button"
@@ -76,8 +76,8 @@ export function PriorityRanking({
                     className="block h-1.5 w-[30%] max-w-[110px] min-w-9 shrink-0 overflow-hidden rounded-full bg-gray-10"
                   >
                     <span
-                      className="block h-full rounded-full bg-danger-50"
-                      style={{ width: `${region.score}%` }}
+                      className="block h-full animate-bar-grow rounded-full bg-danger-50 transition-[width] duration-500"
+                      style={{ width: `${region.score}%`, animationDelay: `${440 + index * 60}ms` }}
                     />
                   </span>
                   <span
