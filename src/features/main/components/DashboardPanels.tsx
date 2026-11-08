@@ -7,7 +7,7 @@ import type { OpenRegionDetail } from './RegionPreviewContent'
 type DashboardPanelsProps = {
   period: Period
   selectedRegionCode: string | null
-  onSelectRegion: (regionCode: string) => void
+  onSelectRegion: (regionCode: string, focusMap: boolean) => void
   mode: DashboardSelection['mode']
   onBack: () => void
   focusRequest: MapFocusRequest | null
@@ -29,14 +29,14 @@ export function DashboardPanels({
       <RegionMapCard
         period={period}
         selectedRegionCode={selectedRegionCode}
-        onSelectRegion={onSelectRegion}
+        onSelectRegion={(code) => onSelectRegion(code, false)}
         focusRequest={focusRequest}
       />
       <DashboardRightPanel
         period={period}
         selectedRegionCode={selectedRegionCode}
         mode={mode}
-        onSelectRegion={onSelectRegion}
+        onSelectRegion={(code) => onSelectRegion(code, true)}
         onBack={onBack}
         onOpenRegionDetail={onOpenRegionDetail}
       />

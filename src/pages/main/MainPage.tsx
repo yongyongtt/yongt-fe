@@ -12,6 +12,7 @@ import { Card } from '@/shared/components/Card'
 import { EmptyState } from '@/shared/components/EmptyState'
 import { PageHero } from '@/shared/components/PageHero'
 import { PeriodSelect } from '@/shared/components/PeriodSelect'
+import { HomeIcon } from '@/shared/components/icons'
 import { DEFAULT_YEAR } from '@/shared/constants/period'
 import { usePeriodParams } from '@/shared/hooks/usePeriodParams'
 
@@ -27,8 +28,17 @@ export function MainPage() {
 
   return (
     <>
-      <PageHero className="min-h-[236px]">
-        <div className="flex flex-col items-start gap-7 pt-10 pb-24 xl:flex-row xl:justify-between xl:pt-[49px] xl:pb-0">
+      <PageHero className="min-h-[272px]">
+        <nav
+          aria-label="현재 위치"
+          className="flex animate-fade-up items-center gap-2 pt-9 text-sm tracking-[-0.01em]"
+        >
+          <HomeIcon className="text-white" />
+          <span aria-current="page" className="font-medium text-white">
+            메인 대시보드
+          </span>
+        </nav>
+        <div className="flex flex-col items-start gap-7 pt-7 pb-24 xl:flex-row xl:justify-between xl:pb-0">
           <div className="min-w-0">
             <h1 className="text-[30px] leading-[1.3] font-bold tracking-[-0.03em] text-white lg:text-[40px] lg:leading-[48px]">
               용인시 교통 취약지역 현황
@@ -90,7 +100,9 @@ export function MainPage() {
           <DashboardPanels
             period={period}
             selectedRegionCode={selection.regionCode}
-            onSelectRegion={(regionCode) => dispatch({ type: 'select', regionCode })}
+            onSelectRegion={(regionCode, focusMap) =>
+              dispatch({ type: 'select', regionCode, focusMap })
+            }
             mode={selection.mode}
             onBack={() => dispatch({ type: 'back' })}
             focusRequest={selection.focusRequest}

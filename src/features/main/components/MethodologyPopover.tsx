@@ -2,6 +2,7 @@ import { useId } from 'react'
 import * as Popover from '@radix-ui/react-popover'
 import methodologyIcon from '@/assets/main/methodology.svg'
 import { CloseIcon } from '@/shared/components/icons'
+import { USE_MOCK } from '@/shared/api/mock'
 import { vulnerabilityLevels } from '../map/vulnerability'
 
 export function MethodologyPopover() {
@@ -38,21 +39,18 @@ export function MethodologyPopover() {
           </div>
           <div className="space-y-4 p-5 text-[13px] leading-6 break-keep text-gray-60">
             <p id={`${id}-notice`} className="rounded bg-gray-5 px-3 py-2">
-              아직 실제 출처·분석 기준이 연결되지 않았습니다. 아래 내용은 시연용이며 실제 교통
-              취약지역 판정 기준이 아닙니다.
+              종합 취약도는 점수가 높을수록 취약하며, 아래의 5단계 구간으로 지도 색상을 표시합니다.
             </p>
             <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
               <dt className="font-bold text-gray-90">분석 단위</dt>
-              <dd>읍·면·동 (시연용)</dd>
+              <dd>읍·면·동</dd>
               <dt className="font-bold text-gray-90">점수 방향</dt>
-              <dd>높을수록 취약 (시연용)</dd>
+              <dd>높을수록 취약</dd>
               <dt className="font-bold text-gray-90">데이터 출처</dt>
-              <dd>상세 화면과 공통으로 사용하는 시연용 목업</dd>
-              <dt className="font-bold text-gray-90">모델 버전</dt>
-              <dd>Mock</dd>
+              <dd>용인시 공공데이터(용인앱택시, 버스정류장, 생활이동인구) · 공공데이터포털</dd>
             </dl>
             <div>
-              <h4 className="mb-2 font-bold text-gray-90">지도 색상 구간 (시연용)</h4>
+              <h4 className="mb-2 font-bold text-gray-90">지도 색상 구간</h4>
               <ul className="space-y-1">
                 {vulnerabilityLevels.map((level) => (
                   <li key={level.label} className="flex flex-wrap items-center gap-x-2">
@@ -67,10 +65,12 @@ export function MethodologyPopover() {
                 집계 기준과 별개입니다.
               </p>
             </div>
-            <p className="border-t border-gray-10 pt-3 text-xs text-gray-50">
-              지도 경계·위치·면적도 가상 도식입니다. 실제 행정경계와 분석 기준이 제공되면
-              교체합니다.
-            </p>
+            {USE_MOCK && (
+              <p className="border-t border-gray-10 pt-3 text-xs text-gray-50">
+                현재 화면의 점수는 시연용 목업입니다. 지도 경계·위치·면적은 가상 도식이며 실제
+                행정경계가 제공되면 교체합니다.
+              </p>
+            )}
           </div>
         </Popover.Content>
       </Popover.Portal>

@@ -28,7 +28,7 @@ const mapControls = {
   onTogglePan: noop,
 }
 
-test('시연용 색상 구간은 경계값과 100점을 올바르게 분류한다', () => {
+test('확정 색상 구간은 경계값과 100점을 올바르게 분류한다', () => {
   for (const [score, label] of [
     [0, '매우 낮음'],
     [19.9, '매우 낮음'],

@@ -42,17 +42,58 @@ const renderPanel = (
 
 test('목록 복귀는 선택과 지도 포커스 요청을 보존하고 같은 지역을 다시 열 수 있다', () => {
   assert.equal(initialSelection.mode, 'ranking')
-  const selected = selectionReducer(initialSelection, { type: 'select', regionCode: '4146134000' })
+  const selected = selectionReducer(initialSelection, {
+    type: 'select',
+    regionCode: '4146134000',
+    focusMap: true,
+  })
   const back = selectionReducer(selected, { type: 'back' })
   assert.equal(back.mode, 'ranking')
   assert.equal(back.regionCode, selected.regionCode)
   assert.equal(back.focusRequest, selected.focusRequest)
-  const reopened = selectionReducer(back, { type: 'select', regionCode: selected.regionCode! })
+  const reopened = selectionReducer(back, {
+    type: 'select',
+    regionCode: selected.regionCode!,
+    focusMap: true,
+  })
   assert.equal(reopened.mode, 'preview')
   assert.equal(reopened.focusRequest?.version, 2)
-  const next = selectionReducer(reopened, { type: 'select', regionCode: '4146135000' })
+  const next = selectionReducer(reopened, {
+    type: 'select',
+    regionCode: '4146135000',
+    focusMap: true,
+  })
   assert.equal(next.regionCode, '4146135000')
   assert.equal(next.focusRequest?.version, 3)
+})
+
+test('지도 직접 선택은 미리보기만 바꾸고 이전 확대 요청을 유지한다', () => {
+  const first = selectionReducer(initialSelection, {
+    type: 'select',
+    regionCode: '4146134000',
+    focusMap: false,
+  })
+  assert.equal(first.focusRequest, null)
+  assert.equal(first.mode, 'preview')
+  const ranked = selectionReducer(first, {
+    type: 'select',
+    regionCode: '4146135000',
+    focusMap: true,
+  })
+  const clicked = selectionReducer(ranked, {
+    type: 'select',
+    regionCode: '4146136000',
+    focusMap: false,
+  })
+  assert.equal(clicked.regionCode, '4146136000')
+  assert.equal(clicked.focusRequest, ranked.focusRequest)
+  const next = selectionReducer(clicked, {
+    type: 'select',
+    regionCode: '4146125000',
+    focusMap: false,
+  })
+  assert.equal(next.regionCode, '4146125000')
+  assert.equal(next.focusRequest, ranked.focusRequest)
 })
 
 test('TOP10은 1~10위만 표시하고 null은 제외하되 0점과 원래 순위는 보존한다', () => {
