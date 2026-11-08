@@ -1,8 +1,27 @@
 /** 백엔드 공통 응답 형태: { success, data, error } */
-type ApiResponse<T> = {
-  success: boolean
-  data: T | null
-  error: { code: string; message: string } | null
+type ApiResponse<T> =
+  | { success: true; data: T | null; error: null }
+  | { success: false; data: null; error: { code: string; message: string } }
+
+function isApiResponse(value: unknown): value is ApiResponse<unknown> {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
+  const body = value as Record<string, unknown>
+  if (body.success === true) {
+    return Object.hasOwn(body, 'data') && body.error === null
+  }
+  if (body.success !== false || body.data !== null) return false
+  const error = body.error
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    !Array.isArray(error) &&
+    'code' in error &&
+    typeof error.code === 'string' &&
+    error.code.trim().length > 0 &&
+    'message' in error &&
+    typeof error.message === 'string' &&
+    error.message.trim().length > 0
+  )
 }
 
 /** 백엔드 에러 코드: REGION_NOT_FOUND, PERIOD_NOT_FOUND, RECOMMENDATION_NOT_FOUND 등 */
@@ -43,21 +62,34 @@ export async function apiGet<T>(path: string, query: Record<string, QueryValue> 
       throw new ApiError('NETWORK_ERROR', '서버에 연결하지 못했습니다.', 0)
     }
 
-    let body: ApiResponse<T>
+    let body: unknown
     try {
       body = await res.json()
     } catch {
-      throw new ApiError('INVALID_RESPONSE', '서버 응답을 읽지 못했습니다.', res.status)
-    }
-
-    if (!body.success || body.data === null) {
       throw new ApiError(
-        body.error?.code ?? 'UNKNOWN',
-        body.error?.message ?? '알 수 없는 오류가 발생했습니다.',
+        res.ok ? 'INVALID_RESPONSE' : 'HTTP_ERROR',
+        res.ok ? '서버 응답을 읽지 못했습니다.' : '서버 요청을 처리하지 못했습니다.',
         res.status,
       )
     }
-    return body.data
+
+    if (!isApiResponse(body)) {
+      throw new ApiError(
+        res.ok ? 'INVALID_RESPONSE' : 'HTTP_ERROR',
+        res.ok ? '서버 응답 형식이 올바르지 않습니다.' : '서버 요청을 처리하지 못했습니다.',
+        res.status,
+      )
+    }
+    if (!body.success) {
+      throw new ApiError(body.error.code, body.error.message, res.status)
+    }
+    if (!res.ok) {
+      throw new ApiError('HTTP_ERROR', '서버 요청을 처리하지 못했습니다.', res.status)
+    }
+    if (body.data === null) {
+      throw new ApiError('EMPTY_DATA', '표시할 데이터가 없습니다.', res.status)
+    }
+    return body.data as T
   } catch (error) {
     if (controller.signal.aborted) {
       throw new ApiError('TIMEOUT_ERROR', '서버 응답 시간이 초과되었습니다. 다시 시도해 주세요.', 0)
