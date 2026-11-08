@@ -28,7 +28,7 @@ UI 구현 시 `MAIN_MOCK_NOTICE`로 가상 지도 및 표본 데이터임을 고
 
 - Figma 최종 메인 v2 `161:826`을 기준으로 `SummaryCards`, `DashboardPanels`, `MockDataDisclosure`를 구성했다.
 - KPI는 응답의 summary를 사용하며, 조회 중 Skeleton을 표시하고 데이터 없음과 0을 구분한다.
-- 우측 순위/AI 패널은 후속 기능을 위한 자리 표시 상태다. 검색·지도 확대/이동·순위 선택 버튼은 아직 제공하지 않는다.
+- 우측 순위/AI 패널은 후속 기능을 위한 자리 표시 상태다. 지도 및 검색 선택 상태는 MainPage에서 공유하며 우측 패널 연결은 후속 작업이다.
 - Header/Footer/PageHero/Card/PeriodSelect/Skeleton은 기존 공통 컴포넌트를 수정하지 않고 사용한다.
 - 기존 공통 푸터의 좁은 화면 줄바꿈과 로고/히어로 장식의 Figma 차이는 이번 변경 범위에서 수정하지 않았다.
 - `feature/main-dashboard`는 develop에서 생성한 뒤 미병합 선행 데이터 커밋을 cherry-pick했다. 데이터 PR 병합 후 develop과 대조해 대시보드 변경만 후속 PR에 포함해야 한다.
@@ -42,8 +42,21 @@ UI 구현 시 `MAIN_MOCK_NOTICE`로 가상 지도 및 표본 데이터임을 고
 - 마우스 hover/키보드 초점에 지역명·구명·점수를 표시한다. 선택 지역은 테두리·안내 문구·`aria-pressed`로 표시한다. 강조 테두리는 모든 도형 위에 별도 레이어로 그려 이웃 경계가 덮지 않게 한다.
 - `map/vulnerability.ts`의 0~100점, 20점 간격 5단계는 시연 전용이다. null/잘못된 점수는 회색으로 표시하고 0점과 구분한다. 기존 KPI 취약지역 판정식과는 별개다.
 - 단계별 색은 `src/styles/index.css`에 지도 전용 토큰 4개를 추가했고 4단계는 기존 danger-50을 재사용한다. 기존 토큰과 shared/상세 파일은 변경하지 않는다.
-- 좁은 화면은 지도 내부 가로 스크롤을 허용하고 범례를 지도 아래에 배치해 도형을 가리지 않는다.
+- 좁은 화면은 지도 폭을 화면에 맞추고 확대/손 도구로 탐색한다. 범례는 지도 아래에 배치해 도형을 가리지 않는다.
 - `feature/main-map`도 develop에서 생성 후 선행 데이터/대시보드 커밋을 cherry-pick했다. 선행 PR 병합 후 지도 변경만 PR에 포함되도록 기준 브랜치와 대조한다.
+
+## 검색 및 지도 조작
+
+- `RegionSearch`는 구/읍면동 이름의 공백을 정규화해 현재 기간의 지역을 검색한다. 검색 결과는 현재 가상 도형이 연결된 지역만 제공한다.
+- `처인구` 검색은 기존 목업에 있는 원삼면/백암면/양지면/포곡읍 각각을 반환한다. 없는 지역을 새로 만들지 않는다.
+- combobox/listbox, 방향키 탐색·Enter 선택·Escape/바깥 클릭/Tab 닫기를 지원한다. IME 조합 중 Enter는 결과 선택으로 처리하지 않는다.
+- 결과 선택은 MainPage의 지역 선택과 연동하며 해당 도형을 확대해 화면 안에 표시하고 손 도구를 해제한다. 우측 AI 미리보기는 아직 구현하지 않는다.
+- 지도 배율/이동 상태는 RegionMapCard가 보관해 기간 변경·조회 로딩 후에도 유지한다. 검색어는 기간 변경 시 초기화한다.
+- 확대/축소는 화면 중심을 유지하며 1~3.5배로 제한한다. 최소 배율로 축소하면 전체 지도로 돌아간다.
+- 손 도구는 Pointer Capture로 마우스/터치 이동을 처리한다. 4 CSS px 이상 움직여야 드래그를 시작하며, 손 도구의 포인터 클릭/드래그는 지역 선택을 변경하지 않는다.
+- 지도 초점 상태에서 손 도구를 켜고 방향키로 이동할 수 있다. Home은 전체 보기, Escape는 손 도구 해제다. 확대 후 Tab으로 지역을 탐색할 때 라벨이 화면 밖이면 다시 화면 안으로 이동한다.
+- 검색 팝업은 지도 도구보다 높은 레이어에 있으며 SVG 포인터/키보드 이벤트와 분리한다. 지도 라벨과 강조선은 같은 transform을 사용하고 테두리의 화면상 굵기는 유지한다.
+- `feature/main-map-interactions`는 develop에서 생성 후 앞선 로컬 기능 커밋을 가져왔다. 선행 PR 병합 후 이번 변경만 PR에 포함해야 한다. 권한 확인 전 푸시는 보류한다.
 
 ## 검증
 
@@ -58,8 +71,11 @@ npx vite build --ssr tests/main-period.test.tsx --outDir node_modules/.tmp/main-
 node --test --test-isolation=none node_modules/.tmp/main-period-tests/main-period.test.js
 npx vite build --ssr tests/main-map.test.tsx --outDir node_modules/.tmp/main-map-tests
 node --test --test-isolation=none node_modules/.tmp/main-map-tests/main-map.test.js
+npx vite build --ssr tests/main-map-interactions.test.tsx --outDir node_modules/.tmp/main-map-interactions-tests
+node --test --test-isolation=none node_modules/.tmp/main-map-interactions-tests/main-map-interactions.test.js
 ```
 
 테스트는 기존 상세와의 데이터 일치, 기간/지역 오류, 추천 없음/현행 유지/낮은 신뢰도, 캐시 키 분리를 확인한다.
 기간 화면 테스트는 URL별 로딩/성공/오류 표시와 상세 링크의 기간 유지를 서버 렌더링으로 확인한다.
 지도 테스트는 구간 경계값·점수 없음·목업 코드 일치·선택 표시·도형 누락·로딩/오류/빈 지도 상태를 확인한다.
+지도 조작 테스트는 지역 검색, 배율 제한/중심 유지, 이동 제한, 검색·키보드 포커스와 도구 상태를 확인한다. 실제 브라우저에서는 검색 결과 클릭·키보드 선택·Escape, 드래그 시 선택 유지, 방향키/Home, 최대/최소 배율, 모바일 선택과 기간 전환을 확인한다.
