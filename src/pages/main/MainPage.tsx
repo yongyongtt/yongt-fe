@@ -10,6 +10,7 @@ import { ApiError } from '@/shared/api/client'
 import { USE_MOCK } from '@/shared/api/mock'
 import { Card } from '@/shared/components/Card'
 import { EmptyState } from '@/shared/components/EmptyState'
+import { ApiFailureState } from '@/features/main/components/ApiFailureState'
 import { PageHero } from '@/shared/components/PageHero'
 import { PeriodSelect } from '@/shared/components/PeriodSelect'
 import { HomeIcon } from '@/shared/components/icons'
@@ -52,10 +53,14 @@ export function MainPage() {
               period={period}
               onChange={setPeriod}
               months={dashboard.data?.period.availableMonths ?? []}
+              years={dashboard.data?.period.availableYears}
             />
             <p className="mt-3 text-sm leading-5 text-hero-sub xl:text-right">
               데이터 기준: {periodLabel}
               {USE_MOCK ? ' · 시연용 데이터' : ''}
+              {dashboard.data?.period.updatedAt
+                ? ` · 최종 갱신 ${dashboard.data.period.updatedAt}`
+                : ''}
             </p>
           </div>
         </div>
@@ -76,24 +81,30 @@ export function MainPage() {
         </div>
         {dashboard.error && (
           <Card className="p-6">
-            <EmptyState
-              title={
-                periodNotFound ? '해당 기간의 데이터가 없습니다.' : '데이터를 불러오지 못했습니다.'
-              }
-              description={
-                periodNotFound
-                  ? '연간 조회로 돌아간 후 제공되는 월을 선택해 주세요.'
-                  : '잠시 후 다시 시도해 주세요.'
-              }
-              action={
-                periodNotFound
-                  ? {
-                      label: '기본 연간 조회로 돌아가기',
-                      onClick: () => setPeriod({ year: DEFAULT_YEAR, month: null }),
-                    }
-                  : { label: '다시 시도', onClick: () => void dashboard.refetch() }
-              }
-            />
+            {periodNotFound ? (
+              <EmptyState
+                title={
+                  periodNotFound
+                    ? '해당 기간의 데이터가 없습니다.'
+                    : '데이터를 불러오지 못했습니다.'
+                }
+                description={
+                  periodNotFound
+                    ? '연간 조회로 돌아간 후 제공되는 월을 선택해 주세요.'
+                    : '잠시 후 다시 시도해 주세요.'
+                }
+                action={
+                  periodNotFound
+                    ? {
+                        label: '기본 연간 조회로 돌아가기',
+                        onClick: () => setPeriod({ year: DEFAULT_YEAR, month: null }),
+                      }
+                    : { label: '다시 시도', onClick: () => void dashboard.refetch() }
+                }
+              />
+            ) : (
+              <ApiFailureState error={dashboard.error} onRetry={() => void dashboard.refetch()} />
+            )}
           </Card>
         )}
         <div className="mt-4">

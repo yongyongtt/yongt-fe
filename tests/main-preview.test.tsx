@@ -224,7 +224,7 @@ test('조회 중이나 오류에서도 목록 복귀를 제공하며 이전 추�
       error: new ApiError('REGION_NOT_FOUND', '없는 지역', 404),
     })
     const error = renderPanel(client, code, 'preview')
-    assert.ok(error.includes('미리보기 다시 불러오기'))
+    assert.ok(error.includes('다시 시도'))
     assert.ok(error.includes('우선 해결 지역 목록으로 돌아가기'))
     assert.ok(!error.includes('추천 대안 조합'))
   } finally {

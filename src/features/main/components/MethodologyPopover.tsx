@@ -63,6 +63,7 @@ export function MethodologyPopover() {
               <p className="mt-2 text-xs text-gray-50">
                 점수가 없거나 유효하지 않으면 회색으로 표시합니다. 색상 구간은 상단의 취약지역 수
                 집계 기준과 별개입니다.
+                {!USE_MOCK && ' 취약지역 수는 API에서 50점 이상 지역으로 집계합니다.'}
               </p>
             </div>
             {USE_MOCK && (

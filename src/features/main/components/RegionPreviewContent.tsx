@@ -19,7 +19,10 @@ export function RegionPreviewContent({
 }) {
   const [detailNotice, setDetailNotice] = useState(false)
   const recommendation = preview.recommendation
-  const options = recommendation ? getRecommendedOptions(recommendation) : []
+  const options =
+    preview.recommended ?? (recommendation ? getRecommendedOptions(recommendation) : [])
+  const reasons = preview.summary ? [preview.summary] : (recommendation?.reasons ?? [])
+  const isKeep = preview.isKeep ?? recommendation?.isKeep ?? false
 
   return (
     <>
@@ -42,7 +45,7 @@ export function RegionPreviewContent({
             {preview.header.gu} · 인공지능 진단 결과{USE_MOCK ? ' (시연용)' : ''}
           </p>
         </div>
-        {preview.reliability.low && (
+        {preview.reliability?.low && (
           <LowReliabilityBanner
             note={
               preview.reliability.note ?? '이 지역은 지표 신뢰도가 낮습니다. 결과는 참고용입니다.'
@@ -63,7 +66,7 @@ export function RegionPreviewContent({
         </section>
         <section>
           <h4 className="mb-2 text-[15px] font-bold">인공지능(AI) 추천 해결방안</h4>
-          {!recommendation ? (
+          {!recommendation && !preview.recommended?.length && !preview.summary ? (
             <EmptyState
               title="생성된 AI 추천이 없습니다."
               description="지역 정보와 유형은 확인할 수 있습니다."
@@ -72,7 +75,7 @@ export function RegionPreviewContent({
             <>
               <div className="rounded border border-gray-10 px-4 py-4">
                 <p className="text-xs text-gray-50">
-                  {recommendation.isKeep ? '현재 교통 여건 유지' : '추천 대안 조합'}
+                  {isKeep ? '현재 교통 여건 유지' : '추천 대안 조합'}
                 </p>
                 {options.length ? (
                   <div className="mt-3 flex flex-wrap items-center gap-2.5">
@@ -95,9 +98,9 @@ export function RegionPreviewContent({
               </div>
               <div className="mt-4">
                 <h5 className="text-xs text-gray-50">추천 근거 요약</h5>
-                {recommendation.reasons.length ? (
+                {reasons.length ? (
                   <ul className="mt-1 space-y-2 text-[13px] leading-6 break-keep text-gray-90">
-                    {recommendation.reasons.map((reason, index) => (
+                    {reasons.map((reason, index) => (
                       <li key={index}>{reason}</li>
                     ))}
                   </ul>

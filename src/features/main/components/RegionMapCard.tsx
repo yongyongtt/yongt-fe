@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { MapFocusRequest } from '../selection'
 import { Card } from '@/shared/components/Card'
 import { EmptyState } from '@/shared/components/EmptyState'
+import { ApiFailureState } from '@/features/main/components/ApiFailureState'
 import { Skeleton } from '@/shared/components/Skeleton'
 import type { Period } from '@/shared/hooks/usePeriodParams'
 import { useDashboardMap } from '../hooks'
@@ -89,11 +90,7 @@ export function RegionMapCard({
             <Skeleton className="h-[360px] w-full" />
           </div>
         ) : map.error ? (
-          <EmptyState
-            title="지도 데이터를 불러오지 못했습니다."
-            description="선택한 기간을 확인하거나 다시 시도해 주세요."
-            action={{ label: '지도 다시 불러오기', onClick: () => void map.refetch() }}
-          />
+          <ApiFailureState error={map.error} onRetry={() => void map.refetch()} />
         ) : mappedRegions.length === 0 ? (
           <EmptyState
             title="표시할 지역 도형이 없습니다."
