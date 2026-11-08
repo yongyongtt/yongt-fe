@@ -24,6 +24,15 @@ UI 구현 시 `MAIN_MOCK_NOTICE`로 가상 지도 및 표본 데이터임을 고
 기간 변경 시 Query 키가 바뀌며, 상세 이동 예시에도 같은 기간을 넘긴다.
 지도/순위/미리보기 화면이 추가되면 동일한 `period`를 각 조회 훅에 전달한다.
 
+## 기본 화면
+
+- Figma 최종 메인 v2 `161:826`을 기준으로 `SummaryCards`, `DashboardPanels`, `MockDataDisclosure`를 구성했다.
+- KPI는 응답의 summary를 사용하며, 조회 중 Skeleton을 표시하고 데이터 없음과 0을 구분한다.
+- 지도/순위 패널은 후속 기능을 위한 자리 표시 상태다. 검색·지도 조작·순위 선택 버튼은 아직 제공하지 않는다.
+- Header/Footer/PageHero/Card/PeriodSelect/Skeleton은 기존 공통 컴포넌트를 수정하지 않고 사용한다.
+- 기존 공통 푸터의 좁은 화면 줄바꿈과 로고/히어로 장식의 Figma 차이는 이번 변경 범위에서 수정하지 않았다.
+- `feature/main-dashboard`는 develop에서 생성한 뒤 미병합 선행 데이터 커밋을 cherry-pick했다. 데이터 PR 병합 후 develop과 대조해 대시보드 변경만 후속 PR에 포함해야 한다.
+
 ## 검증
 
 프로젝트 의존성 설치 후 Vite/React Router가 지원하는 Node 환경에서 실행한다.
