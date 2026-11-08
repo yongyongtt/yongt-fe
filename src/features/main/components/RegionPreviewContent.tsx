@@ -47,7 +47,7 @@ export function RegionPreviewContent({
             note={
               preview.reliability.note ?? '이 지역은 지표 신뢰도가 낮습니다. 결과는 참고용입니다.'
             }
-            className="flex-wrap [&>p:last-child]:ml-0 [&>p:last-child]:w-full [&>p:last-child]:pl-0 [&>p:nth-child(2)]:flex-1"
+            className="[&]:flex-wrap [&]:items-start [&>p:last-child]:ml-0 [&>p:last-child]:w-full [&>p:last-child]:pl-0 [&>p:nth-child(2)]:flex-1 [&>svg]:mt-0.5"
           />
         )}
         <section className="rounded border border-gray-10 px-4 py-3.5">
