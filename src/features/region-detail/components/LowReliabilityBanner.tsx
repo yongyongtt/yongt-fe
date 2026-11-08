@@ -14,16 +14,19 @@ export function LowReliabilityBanner({ note, className }: { note: string; classN
     <div
       role="note"
       className={cx(
-        'flex items-center gap-3 rounded-[2px] border-l-4 border-danger-50 bg-danger-5 px-5 py-3.5',
+        'flex flex-wrap items-start gap-x-3 gap-y-1 rounded-[2px] border-l-4 border-danger-50 bg-danger-5 px-4 py-3.5 lg:flex-nowrap lg:items-center lg:px-5',
         className,
       )}
     >
-      <AlertCircleIcon width={20} height={20} className="shrink-0 text-danger-50" />
-      <p className="text-[14px] leading-6">
+      <AlertCircleIcon width={20} height={20} className="mt-0.5 shrink-0 text-danger-50 lg:mt-0" />
+      <p className="min-w-0 flex-1 text-[14px] leading-6 lg:flex-none">
         <b className="font-bold text-danger-60">{strong}</b>
         <span className="text-gray-90">{rest}</span>
       </p>
-      <p className="ml-auto shrink-0 pl-6 text-[13.5px] text-gray-50">{CRITERIA}</p>
+      {/* 모바일은 문장 아래 줄, 아이콘 폭(20+12px)만큼 들여 씀 */}
+      <p className="w-full pl-8 text-[13px] text-gray-50 lg:ml-auto lg:w-auto lg:shrink-0 lg:pl-6 lg:text-[13.5px]">
+        {CRITERIA}
+      </p>
     </div>
   )
 }

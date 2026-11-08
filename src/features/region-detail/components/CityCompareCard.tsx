@@ -25,10 +25,12 @@ export function CityCompareCard({
   const { data, isPending, isError, refetch } = useRegionComparison(regionCode, period)
 
   return (
-    <Card className={cx('min-h-[536px] px-8 pt-7 pb-8', className)}>
-      <div className="flex items-center justify-between">
-        <h2 className="text-[22px] font-bold tracking-[-0.02em] text-gray-90">시 평균과 비교</h2>
-        <div className="flex items-center gap-4 text-sm text-gray-60">
+    <Card className={cx('px-5 pt-6 pb-6 lg:min-h-[536px] lg:px-8 lg:pt-7 lg:pb-8', className)}>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <h2 className="text-[19px] font-bold tracking-[-0.02em] text-gray-90 lg:text-[22px]">
+          시 평균과 비교
+        </h2>
+        <div className="flex items-center gap-4 text-[13px] text-gray-60 lg:text-sm">
           <Legend className="bg-primary-50" label={regionName ?? '이 지역'} />
           <Legend className="bg-gray-30" label="용인시 평균" />
         </div>
@@ -47,7 +49,7 @@ export function CityCompareCard({
       ) : isError ? (
         <CardError onRetry={() => refetch()} />
       ) : (
-        <ul className="mt-[22px]">
+        <ul className="mt-3 lg:mt-[22px]">
           {data.metrics.map((m, i) => (
             <MetricRow key={m.key} metric={m} delay={i * 80} />
           ))}
@@ -65,16 +67,20 @@ function MetricRow({ metric, delay }: { metric: ComparisonMetric; delay: number 
 
   return (
     <li className="border-b border-gray-5 py-4 last:border-b-0">
-      <div className="flex items-baseline justify-between">
-        <p className="text-base font-bold tracking-[-0.01em] text-gray-90">{label}</p>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+        <p className="text-[15px] font-bold tracking-[-0.01em] text-gray-90 lg:text-base">
+          {label}
+        </p>
         <p className="flex items-baseline gap-1">
-          <span className="text-lg font-bold tracking-[-0.01em] text-gray-90">{fmt(region)}</span>
-          <span className="text-[15px] text-gray-60">
+          <span className="text-base font-bold tracking-[-0.01em] text-gray-90 lg:text-lg">
+            {fmt(region)}
+          </span>
+          <span className="text-[13px] text-gray-60 lg:text-[15px]">
             / {cityAvg === null ? '평균 정보 없음' : `평균 ${fmt(cityAvg)}`}
           </span>
         </p>
       </div>
-      <div className="mt-[18px] flex flex-col gap-1.5">
+      <div className="mt-3 flex flex-col gap-1.5 lg:mt-[18px]">
         <Bar width={width(region)} className="bg-primary-50" delay={delay} />
         {cityAvg !== null && (
           <Bar width={width(cityAvg)} className="bg-gray-30" delay={delay + 60} />

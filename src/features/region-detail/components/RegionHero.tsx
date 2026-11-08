@@ -19,10 +19,10 @@ export function RegionHero({ overview, period, onPeriodChange }: RegionHeroProps
   const header = overview?.header
 
   return (
-    <PageHero className="h-[217px]">
+    <PageHero className="pb-[60px] lg:h-[217px] lg:pb-0">
       <nav
         aria-label="현재 위치"
-        className="flex animate-fade-up items-center gap-2 pt-9 text-sm tracking-[-0.01em]"
+        className="flex animate-fade-up items-center gap-2 pt-5 text-[13px] tracking-[-0.01em] lg:pt-9 lg:text-sm"
       >
         <HomeIcon className="text-white" />
         <Link to={paths.main(period)} className="text-hero-sub hover:text-white">
@@ -34,13 +34,13 @@ export function RegionHero({ overview, period, onPeriodChange }: RegionHeroProps
         </span>
       </nav>
 
-      <div className="mt-7 flex animate-fade-up items-center justify-between [animation-delay:80ms]">
-        <div className="flex items-center">
+      <div className="mt-4 flex animate-fade-up flex-col gap-4 [animation-delay:80ms] lg:mt-7 lg:flex-row lg:items-center lg:justify-between lg:gap-0">
+        <div className="flex flex-wrap items-center gap-3 lg:flex-nowrap lg:gap-0">
           <button
             type="button"
             aria-label="메인 대시보드로 돌아가기"
             onClick={() => navigate(paths.main(period))}
-            className="flex size-12 shrink-0 items-center justify-center rounded-full border border-white/25 bg-white/12 text-white hover:bg-white/20"
+            className="flex size-10 shrink-0 items-center justify-center rounded-full border border-white/25 bg-white/12 text-white hover:bg-white/20 lg:size-12"
           >
             <ChevronLeftIcon />
           </button>
@@ -49,18 +49,19 @@ export function RegionHero({ overview, period, onPeriodChange }: RegionHeroProps
             <>
               <title>{`${header.regionName} · 용인 교통 사각지대 진단`}</title>
               {/* 데이터가 늦게 와도 이름·칩이 부드럽게 나타나게 함 */}
-              <h1 className="ml-4 animate-fade-in text-[44px] leading-[53px] font-bold tracking-[-0.03em] text-white">
+              <h1 className="animate-fade-in text-[28px] leading-[34px] font-bold tracking-[-0.03em] text-white lg:ml-4 lg:text-[44px] lg:leading-[53px]">
                 {header.regionName}
               </h1>
-              <div className="ml-[23px] flex animate-fade-in gap-2 [animation-delay:120ms]">
+              {/* 모바일은 칩이 이름 아래 줄로 내려감 */}
+              <div className="flex basis-full animate-fade-in flex-wrap gap-1.5 [animation-delay:120ms] lg:ml-[23px] lg:basis-auto lg:flex-nowrap lg:gap-2">
                 <HeroChip>{header.gu}</HeroChip>
                 <HeroChip variant="danger">종합 취약도 {header.score}점</HeroChip>
                 <HeroChip variant="light">우선순위 {header.rank}위</HeroChip>
               </div>
             </>
           ) : (
-            // 제목 줄 높이(53px)만 잡아 둬서 데이터가 와도 옆 요소가 움직이지 않게 함
-            <div className="h-[53px]" />
+            // 제목 줄 높이만 잡아 둬서 데이터가 와도 옆 요소가 움직이지 않게 함
+            <div className="h-10 lg:h-[53px]" />
           )}
         </div>
 

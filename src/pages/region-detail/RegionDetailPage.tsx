@@ -17,6 +17,7 @@ const DEFAULT_LOW_RELIABILITY_NOTE =
 /*
  동네 진단 상세.
  카드 배치: 유형(전체 폭) / 시 평균 비교 + 미배차율 추이(반반) / AI 해결방안(전체 폭)
+ 모바일(lg 미만)은 모든 카드가 한 줄에 하나씩
 */
 export function RegionDetailPage() {
   const { regionCode = '' } = useParams()
@@ -29,9 +30,9 @@ export function RegionDetailPage() {
     <>
       <RegionHero overview={overview.data} period={period} onPeriodChange={setPeriod} />
 
-      <div className="relative container-page -mt-9 flex flex-col gap-6 pb-[72px]">
+      <div className="relative container-page -mt-9 flex flex-col gap-4 pb-12 lg:gap-6 lg:pb-[72px]">
         {overview.error ? (
-          <Card className="animate-fade-up p-9 [animation-delay:160ms]">
+          <Card className="animate-fade-up p-5 [animation-delay:160ms] lg:p-9">
             <RegionDetailError
               error={overview.error}
               period={period}
@@ -53,7 +54,7 @@ export function RegionDetailPage() {
                 className="animate-fade-up [animation-delay:200ms]"
               />
             )}
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6">
               <CityCompareCard
                 regionCode={regionCode}
                 regionName={regionName}

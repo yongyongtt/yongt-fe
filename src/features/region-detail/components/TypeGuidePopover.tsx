@@ -19,7 +19,8 @@ export function TypeGuidePopover({ currentType }: { currentType?: string }) {
           side="bottom"
           align="start"
           sideOffset={10}
-          className="z-50 w-[440px] origin-(--radix-popover-content-transform-origin) rounded border border-gray-20 bg-white shadow-[0_4px_6px_rgba(30,33,36,0.1)] outline-none data-[state=closed]:animate-dropdown-out data-[state=open]:animate-dropdown-in"
+          collisionPadding={16}
+          className="z-50 w-[min(440px,calc(100vw-32px))] origin-(--radix-popover-content-transform-origin) rounded border border-gray-20 bg-white shadow-[0_4px_6px_rgba(30,33,36,0.1)] outline-none data-[state=closed]:animate-dropdown-out data-[state=open]:animate-dropdown-in"
         >
           <div className="flex items-center justify-between px-5 pt-4 pb-1.5">
             <p className="text-[15px] font-bold text-gray-90">사각지대 유형 안내</p>

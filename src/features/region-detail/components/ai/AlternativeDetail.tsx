@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { CloseIcon } from '@/shared/components/icons'
 import { cx } from '@/shared/utils/cx'
 import type { RecommendationOption } from '../../types'
@@ -42,11 +43,15 @@ function Panel({ option, onClose }: { option: RecommendationOption; onClose: () 
   return (
     <section
       aria-label={`${option.name} ${isExcluded ? '제외 이유' : '상세'}`}
-      className={cx('rounded-xl px-[25px] pt-[18px] pb-6', s.box)}
+      className={cx(
+        'rounded-xl px-4 pt-4 pb-4 lg:px-[25px] lg:pt-[18px] lg:pb-6',
+        s.box,
+        s.panelMobile,
+      )}
     >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <h3 className="text-lg font-bold tracking-[-0.01em] text-gray-90">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2 lg:gap-2.5">
+          <h3 className="text-base font-bold tracking-[-0.01em] text-gray-90 lg:text-lg">
             {option.name} {isExcluded ? '제외 이유' : '상세'}
           </h3>
           <span className={cx('rounded border bg-white px-2.5 text-sm leading-7 font-bold', s.tag)}>
@@ -72,11 +77,14 @@ function Panel({ option, onClose }: { option: RecommendationOption; onClose: () 
         </p>
       ) : (
         <div
-          className="mt-3 grid gap-4"
-          style={{ gridTemplateColumns: `repeat(${sections.length}, minmax(0, 1fr))` }}
+          className="mt-3 grid grid-cols-1 gap-3 lg:grid-cols-(--sec-cols) lg:gap-4"
+          style={{ '--sec-cols': `repeat(${sections.length}, minmax(0, 1fr))` } as CSSProperties}
         >
           {sections.map((sec) => (
-            <div key={sec.title} className="rounded-[2px] bg-white px-[18px] py-4">
+            <div
+              key={sec.title}
+              className="rounded-[2px] bg-white px-4 py-3.5 lg:px-[18px] lg:py-4"
+            >
               <h4 className="text-sm leading-6 font-bold text-gray-90">{sec.title}</h4>
               <ul className="mt-1 list-disc pl-[18px] text-sm leading-6 text-gray-90 marker:text-gray-50">
                 {sec.lines.map((line) => (

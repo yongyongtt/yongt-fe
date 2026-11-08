@@ -88,14 +88,14 @@ src/
 ├─ pages/
 │  ├─ main/             # 메인 대시보드  ← 지도 담당
 │  ├─ region-detail/    # 동네 진단 상세 ← 상세 담당
-│  └─ not-found/
+│  └─ error/            # 404·오류 화면
 ├─ features/
 │  ├─ main/             # 메인 화면 조각 (컴포넌트, api, 타입, 목업) ← 지도 담당
 │  └─ region-detail/    # 상세 화면 조각 ← 상세 담당
 ├─ shared/              # 두 화면이 같이 쓰는 것 (수정 시 서로 알리기)
 │  ├─ api/              # client.ts(공통 요청), mock.ts(목업 도우미)
 │  ├─ components/       # Header, Footer, PageHero, PeriodSelect, HeroChip, Card, icons
-│  ├─ hooks/            # usePeriodParams (기간 ↔ URL)
+│  ├─ hooks/            # usePeriodParams (기간 ↔ URL), useMediaQuery (화면 크기)
 │  ├─ constants/        # 기본 연도 등
 │  └─ utils/
 ├─ assets/              # 로고, 히어로 그래픽
@@ -156,6 +156,8 @@ useQuery({ queryKey: ['dashboard', period], queryFn: () => fetchDashboard(period
 - 색은 토큰 이름으로: `text-gray-90`, `bg-primary-50`, `text-danger-50` (임의 hex 금지)
 - 본문 폭은 `container-page` 클래스 (1440px 가운데 정렬)
 - 상단 파란 영역은 `PageHero`, 기간 선택은 `PeriodSelect`, 흰 카드는 `Card`를 사용
+- 모바일 대응: 기본 클래스는 모바일, PC는 `lg:`(1024px 이상)로 덮어씀. 예: `px-5 lg:px-9`
+- CSS로 안 되는 경우(차트 옵션 등)만 `useMediaQuery(DESKTOP_QUERY)` 사용
 
 ## 메인 페이지 작업 안내 (지도)
 
