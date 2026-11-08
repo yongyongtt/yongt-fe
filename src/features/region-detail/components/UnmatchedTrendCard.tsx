@@ -41,7 +41,10 @@ export function UnmatchedTrendCard({
   year,
   className,
 }: UnmatchedTrendCardProps) {
-  const { data, isPending, isError, refetch } = useUnmatchedTrend(regionCode, year)
+  const { data, isPending, isError, isPlaceholderData, refetch } = useUnmatchedTrend(
+    regionCode,
+    year,
+  )
 
   return (
     <Card className={cx('px-5 pt-6 pb-6 lg:min-h-[536px] lg:px-8 lg:pt-7 lg:pb-8', className)}>
@@ -63,7 +66,10 @@ export function UnmatchedTrendCard({
       ) : data.points.length === 0 ? (
         <EmptyState className="mt-6" title="표시할 데이터가 없습니다." />
       ) : (
-        <TrendChart points={data.points} />
+        // 연도를 바꾸면 불러오는 동안 흐리게, 도착하면 선이 새 값으로 움직임
+        <div className={cx('transition-opacity duration-300', isPlaceholderData && 'opacity-50')}>
+          <TrendChart points={data.points} />
+        </div>
       )}
     </Card>
   )

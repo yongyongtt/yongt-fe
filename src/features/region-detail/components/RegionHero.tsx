@@ -1,20 +1,24 @@
 import { Link, useNavigate } from 'react-router'
 import { paths } from '@/app/paths'
+import { AnimatedNumber } from '@/shared/components/AnimatedNumber'
 import { HeroChip } from '@/shared/components/HeroChip'
 import { ChevronLeftIcon, HomeIcon } from '@/shared/components/icons'
 import { PageHero } from '@/shared/components/PageHero'
 import { PeriodSelect } from '@/shared/components/PeriodSelect'
 import type { Period } from '@/shared/hooks/usePeriodParams'
+import { cx } from '@/shared/utils/cx'
 import type { RegionOverview } from '../types'
 
 type RegionHeroProps = {
   /** 없으면(불러오는 중·에러) 이름 자리를 비워 둠 */
   overview?: RegionOverview
+  /** 기간을 바꿔 새 값을 불러오는 중 (이전 값이 보이는 동안) */
+  updating?: boolean
   period: Period
   onPeriodChange: (next: Period) => void
 }
 
-export function RegionHero({ overview, period, onPeriodChange }: RegionHeroProps) {
+export function RegionHero({ overview, updating, period, onPeriodChange }: RegionHeroProps) {
   const navigate = useNavigate()
   const header = overview?.header
 
@@ -48,15 +52,28 @@ export function RegionHero({ overview, period, onPeriodChange }: RegionHeroProps
           {header ? (
             <>
               <title>{`${header.regionName} · 용인 교통 사각지대 진단`}</title>
-              {/* 데이터가 늦게 와도 이름·칩이 부드럽게 나타나게 함 */}
-              <h1 className="animate-fade-in text-[28px] leading-[34px] font-bold tracking-[-0.03em] text-white lg:ml-4 lg:text-[44px] lg:leading-[53px]">
+              {/* 이름·칩은 처음 나타날 때와 다른 지역으로 바뀔 때 부드럽게 나타남 (key) */}
+              <h1
+                key={header.regionCode}
+                className="animate-fade-in text-[28px] leading-[34px] font-bold tracking-[-0.03em] text-white lg:ml-4 lg:text-[44px] lg:leading-[53px]"
+              >
                 {header.regionName}
               </h1>
-              {/* 모바일은 칩이 이름 아래 줄로 내려감 */}
-              <div className="flex basis-full animate-fade-in flex-wrap gap-1.5 [animation-delay:120ms] lg:ml-[23px] lg:basis-auto lg:flex-nowrap lg:gap-2">
+              {/* 모바일은 칩이 이름 아래 줄로 내려감. 기간을 바꾸는 동안은 흐리게 */}
+              <div
+                key={`chips-${header.regionCode}`}
+                className={cx(
+                  'flex basis-full animate-fade-in flex-wrap gap-1.5 transition-opacity duration-300 [animation-delay:120ms] lg:ml-[23px] lg:basis-auto lg:flex-nowrap lg:gap-2',
+                  updating && 'opacity-60',
+                )}
+              >
                 <HeroChip>{header.gu}</HeroChip>
-                <HeroChip variant="danger">종합 취약도 {header.score}점</HeroChip>
-                <HeroChip variant="light">우선순위 {header.rank}위</HeroChip>
+                <HeroChip variant="danger">
+                  종합 취약도 <AnimatedNumber value={header.score} />점
+                </HeroChip>
+                <HeroChip variant="light">
+                  우선순위 <AnimatedNumber value={header.rank} />위
+                </HeroChip>
               </div>
             </>
           ) : (
