@@ -8,6 +8,12 @@ import {
   MIN_MAP_LABEL_FONT,
 } from './labels'
 
+// 지도 좌표 기준 가로 보정. 경계가 넓어지는 오른쪽 공간에 두 지역명만 배치한다.
+const LABEL_OFFSET_X: Record<string, number> = {
+  '4146125300': 45, // 모현읍
+  '4146125600': 15, // 이동읍
+}
+
 /** 화면 크기·배율·폰트 로딩이 바뀌면 실제 글자 크기로 겹침을 다시 계산한다. */
 export function useMapLabelLayout(
   svg: RefObject<SVGSVGElement | null>,
@@ -35,7 +41,7 @@ export function useMapLabelLayout(
         const box = text.getBBox()
         const rings = shape.rings ?? [shape.points]
         const position = insetLabelPosition(
-          shape.labelPosition,
+          [shape.labelPosition[0] + (LABEL_OFFSET_X[code] ?? 0), shape.labelPosition[1]],
           ((box.width * MIN_MAP_LABEL_FONT) / MAP_LABEL_FONT + 4) / worldScale,
           ((box.height * MIN_MAP_LABEL_FONT) / MAP_LABEL_FONT + 4) / worldScale,
           rings,
