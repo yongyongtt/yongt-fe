@@ -45,6 +45,7 @@ export function useUnmatchedTrend(regionCode: string, year: number) {
   return useQuery({
     queryKey: regionDetailKeys.trend(regionCode, year),
     queryFn: () => fetchUnmatchedTrend(regionCode, year),
+    placeholderData: keepIfSameRegion(regionCode),
   })
 }
 
@@ -52,5 +53,6 @@ export function useRecommendation(regionCode: string, year: number) {
   return useQuery({
     queryKey: regionDetailKeys.recommendation(regionCode, year),
     queryFn: () => fetchRecommendation(regionCode, year),
+    placeholderData: keepIfSameRegion(regionCode),
   })
 }

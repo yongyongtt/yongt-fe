@@ -31,7 +31,7 @@ type AiSolutionCardProps = {
  지역이 바뀌면 펼친 상태가 남지 않게 페이지에서 key={regionCode}로 씀
 */
 export function AiSolutionCard({ regionCode, regionName, year, className }: AiSolutionCardProps) {
-  const { data, isPending, error, refetch } = useRecommendation(regionCode, year)
+  const { data, isPending, isPlaceholderData, error, refetch } = useRecommendation(regionCode, year)
 
   return (
     <Card className={cx('px-5 pt-6 pb-6 lg:px-9 lg:pt-[34px] lg:pb-8', className)}>
@@ -53,7 +53,14 @@ export function AiSolutionCard({ regionCode, regionName, year, className }: AiSo
       ) : error ? (
         <ErrorBody error={error} onRetry={() => refetch()} />
       ) : (
-        <ResultBody data={data} regionName={regionName ?? '이 지역'} />
+        // 연도를 바꾸면 불러오는 동안 흐리게, 새 결과가 오면 펼친 상태를 닫고 부드럽게 나타남
+        <div className={cx('transition-opacity duration-300', isPlaceholderData && 'opacity-50')}>
+          <ResultBody
+            key={`${data.createdAt}-${data.options.map((o) => o.mode + o.status).join()}`}
+            data={data}
+            regionName={regionName ?? '이 지역'}
+          />
+        </div>
       )}
     </Card>
   )

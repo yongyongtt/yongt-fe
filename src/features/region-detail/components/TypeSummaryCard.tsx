@@ -42,7 +42,8 @@ export function TypeSummaryCard({ type, period, className }: TypeSummaryCardProp
         ) : type === null ? (
           <p className="mt-4 text-[17px] text-gray-50">이 지역의 유형 정보가 아직 없습니다.</p>
         ) : (
-          <>
+          // 유형이 바뀌면(다른 지역·연도) 새 내용이 부드럽게 나타남
+          <div key={type.name} className="animate-fade-in">
             <h2 className="mt-2 text-[26px] leading-[34px] font-bold tracking-[-0.03em] text-type-name lg:mt-3 lg:text-[34px] lg:leading-[46px]">
               {type.name}
             </h2>
@@ -50,7 +51,7 @@ export function TypeSummaryCard({ type, period, className }: TypeSummaryCardProp
               {type.desc}
             </p>
             <SameTypeRegions regions={type.sameTypeRegions} period={period} />
-          </>
+          </div>
         )}
       </div>
 
@@ -76,14 +77,14 @@ function StatChip({ chip }: { chip: string }) {
   // ' · '가 없는 문장은 그대로 보여 줌
   if (value === undefined) {
     return (
-      <div className="flex items-center rounded-[10px] border border-gray-10 px-[18px] py-4 lg:min-h-[146px] lg:px-[22px] lg:py-5">
+      <div className="flex animate-fade-in items-center rounded-[10px] border border-gray-10 px-[18px] py-4 lg:min-h-[146px] lg:px-[22px] lg:py-5">
         <p className="text-[15px] leading-6 font-medium text-gray-90">{label}</p>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col rounded-[10px] border border-gray-10 px-[18px] pt-4 pb-4 lg:min-h-[146px] lg:px-[22px] lg:pt-5 lg:pb-[18px]">
+    <div className="flex animate-fade-in flex-col rounded-[10px] border border-gray-10 px-[18px] pt-4 pb-4 lg:min-h-[146px] lg:px-[22px] lg:pt-5 lg:pb-[18px]">
       <p className="text-sm font-medium tracking-[-0.01em] text-gray-60">{label}</p>
       <p className="mt-2 flex items-baseline gap-0.5">
         <span className="text-[30px] leading-9 font-bold tracking-[-0.02em] text-gray-90 lg:text-4xl lg:leading-[43px]">

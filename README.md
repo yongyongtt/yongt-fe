@@ -36,10 +36,14 @@ npm run dev                  # http://localhost:5173
 
 ### 환경 변수 (`.env.local`)
 
-| 이름                    | 값                      | 설명                                             |
-| ----------------------- | ----------------------- | ------------------------------------------------ |
-| `VITE_USE_MOCK`         | `true` / `false`        | `true`면 목업 데이터, `false`면 실제 백엔드 호출 |
-| `VITE_API_PROXY_TARGET` | `http://localhost:8080` | 개발 서버가 `/api` 요청을 넘길 백엔드 주소       |
+| 이름                      | 값                      | 설명                                                     |
+| ------------------------- | ----------------------- | -------------------------------------------------------- |
+| `VITE_USE_MOCK`           | `true` / `false`        | `true`면 목업 데이터, `false`면 실제 백엔드 호출         |
+| `VITE_MOCK_REGION_DETAIL` | `true` / `false` / 빈칸 | 상세 페이지만 따로 지정. 빈칸이면 `VITE_USE_MOCK`을 따름 |
+| `VITE_API_PROXY_TARGET`   | `http://43.203.57.74`   | 개발 서버가 `/api` 요청을 넘길 백엔드 주소               |
+
+- 배포 사이트의 `/api` 요청은 `vercel.json`이 백엔드로 넘김 (백엔드 주소가 바뀌면 여기도 수정)
+- API 문서(Swagger): http://43.203.57.74/swagger-ui/index.html
 
 ## 브랜치 규칙
 
