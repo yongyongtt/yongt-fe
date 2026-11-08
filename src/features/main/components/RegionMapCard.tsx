@@ -1,10 +1,18 @@
+import { useState } from 'react'
 import { Card } from '@/shared/components/Card'
 import { EmptyState } from '@/shared/components/EmptyState'
 import { Skeleton } from '@/shared/components/Skeleton'
 import type { Period } from '@/shared/hooks/usePeriodParams'
 import { useDashboardMap } from '../hooks'
 import { demoRegionShapes } from '../map/demoRegionShapes'
+import {
+  focusRegionViewport,
+  INITIAL_VIEWPORT,
+  revealRegion,
+  type MapViewport,
+} from '../map/viewport'
 import { MockRegionMap } from './MockRegionMap'
+import { RegionSearch } from './RegionSearch'
 
 type RegionMapCardProps = {
   period: Period
@@ -13,6 +21,8 @@ type RegionMapCardProps = {
 }
 
 export function RegionMapCard({ period, selectedRegionCode, onSelectRegion }: RegionMapCardProps) {
+  const [viewport, setViewport] = useState<MapViewport>({ ...INITIAL_VIEWPORT })
+  const [panMode, setPanMode] = useState(false)
   const map = useDashboardMap(period)
   const regions = map.error ? [] : (map.data?.regions ?? [])
   const mappedRegions = regions.filter((region) =>
@@ -29,6 +39,18 @@ export function RegionMapCard({ period, selectedRegionCode, onSelectRegion }: Re
         </span>
       </div>
       <div className="flex flex-1 flex-col gap-4 p-4 sm:p-7">
+        <RegionSearch
+          key={`${period.year}-${period.month}`}
+          regions={mappedRegions}
+          disabled={map.isPending || Boolean(map.error)}
+          onSelectRegion={(code) => {
+            const shape = demoRegionShapes.find((item) => item.regionCode === code)
+            if (!shape) return
+            onSelectRegion(code)
+            setViewport(focusRegionViewport(shape))
+            setPanMode(false)
+          }}
+        />
         {map.isPending ? (
           <div role="status">
             <span className="sr-only">지도 데이터를 불러오는 중입니다.</span>
@@ -52,6 +74,14 @@ export function RegionMapCard({ period, selectedRegionCode, onSelectRegion }: Re
               shapes={demoRegionShapes}
               selectedRegionCode={selected?.regionCode ?? null}
               onSelectRegion={onSelectRegion}
+              viewport={viewport}
+              onViewportChange={setViewport}
+              panMode={panMode}
+              onTogglePan={() => setPanMode((value) => !value)}
+              onFocusRegion={(code) => {
+                const shape = demoRegionShapes.find((item) => item.regionCode === code)
+                if (shape) setViewport((current) => revealRegion(current, shape))
+              }}
             />
             {mappedRegions.length < regions.length && (
               <p className="text-sm text-gray-60">
@@ -62,7 +92,8 @@ export function RegionMapCard({ period, selectedRegionCode, onSelectRegion }: Re
           </>
         )}
         <p className="text-xs leading-5 text-gray-50">
-          실제 위치·면적과 무관한 도식입니다. 좁은 화면에서는 좌우로 스크롤하세요.
+          실제 위치·면적과 무관한 도식입니다. 손 도구를 켜면 드래그·방향키로 이동하고, 지도에서 Home
+          키를 누르면 전체 보기로 돌아갑니다.
         </p>
         <p role="status" aria-live="polite" className="mt-auto text-[13px] leading-5 text-gray-60">
           {selected

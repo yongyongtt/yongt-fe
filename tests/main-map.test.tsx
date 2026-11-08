@@ -10,6 +10,7 @@ import { describeScore, getVulnerabilityLevel } from '../src/features/main/map/v
 import { mockGetDashboardMap } from '../src/features/main/mocks'
 import type { DashboardMap, DashboardRegion } from '../src/features/main/types'
 import { ApiError } from '../src/shared/api/client'
+import { INITIAL_VIEWPORT } from '../src/features/main/map/viewport'
 
 const period = { year: 2025, month: null }
 const region: DashboardRegion = {
@@ -20,6 +21,12 @@ const region: DashboardRegion = {
   rank: 1,
 }
 const noop = () => {}
+const mapControls = {
+  viewport: INITIAL_VIEWPORT,
+  onViewportChange: noop,
+  panMode: false,
+  onTogglePan: noop,
+}
 
 test('시연용 색상 구간은 경계값과 100점을 올바르게 분류한다', () => {
   for (const [score, label] of [
@@ -54,6 +61,7 @@ test('지도는 선택 상태·지역명·0점을 노출하고 점수 없음은 
   const render = (score: number | null) =>
     renderToStaticMarkup(
       <MockRegionMap
+        {...mapControls}
         regions={[{ ...region, score }]}
         shapes={demoRegionShapes}
         selectedRegionCode={region.regionCode}
@@ -76,6 +84,7 @@ test('지도는 선택 상태·지역명·0점을 노출하고 점수 없음은 
 test('응답이 없는 도형과 도형이 없는 지역에 선택 버튼을 만들지 않는다', () => {
   const html = renderToStaticMarkup(
     <MockRegionMap
+      {...mapControls}
       regions={[{ ...region, regionCode: 'UNMAPPED' }]}
       shapes={demoRegionShapes}
       selectedRegionCode={null}
