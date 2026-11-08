@@ -2,6 +2,7 @@
 
 용용톤 2팀 프론트엔드.
 메인 대시보드와 동네 진단 상세 두 화면으로 구성
+배포 주소: https://yongin-mobility-gap.vercel.app/
 
 - 디자인: Figma `용용톤 2팀` > 디자인 > 최종
 
