@@ -28,6 +28,12 @@
   --color-danger-50: #de3412;
   --color-danger-60: #bd2c0f;
 
+  /* 메인 지도 시연용 취약도 단계. 실제 분석 구간/행정경계와 무관함. */
+  --color-map-heat-1: #fcdfd9;
+  --color-map-heat-2: #f7afa1;
+  --color-map-heat-3: #f48771;
+  --color-map-heat-5: #8a240f;
+
   /* 사각지대 유형 이름 */
   --color-type-name: #063a74;
 

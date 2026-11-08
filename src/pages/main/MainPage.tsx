@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router'
 import { paths } from '@/app/paths'
 import { DashboardPanels } from '@/features/main/components/DashboardPanels'
@@ -16,6 +17,7 @@ import { usePeriodParams } from '@/shared/hooks/usePeriodParams'
 /** 메인 대시보드. 지도와 우측 패널 기능은 후속 브랜치에서 연결한다. */
 export function MainPage() {
   const { period, setPeriod } = usePeriodParams()
+  const [selectedRegionCode, setSelectedRegionCode] = useState<string | null>(null)
   const dashboard = useDashboard(period)
   const periodNotFound =
     dashboard.error instanceof ApiError && dashboard.error.code === 'PERIOD_NOT_FOUND'
@@ -83,7 +85,11 @@ export function MainPage() {
           </Card>
         )}
         <div className="mt-4">
-          <DashboardPanels />
+          <DashboardPanels
+            period={period}
+            selectedRegionCode={selectedRegionCode}
+            onSelectRegion={setSelectedRegionCode}
+          />
         </div>
         {USE_MOCK && <MockDataDisclosure />}
         {!dashboard.error && !dashboard.isPending && (
