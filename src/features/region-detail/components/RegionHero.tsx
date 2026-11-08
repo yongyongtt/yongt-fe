@@ -5,6 +5,7 @@ import { HeroChip } from '@/shared/components/HeroChip'
 import { ChevronLeftIcon, HomeIcon } from '@/shared/components/icons'
 import { PageHero } from '@/shared/components/PageHero'
 import { PeriodSelect } from '@/shared/components/PeriodSelect'
+import { getAvailableMonths } from '@/shared/constants/period'
 import type { Period } from '@/shared/hooks/usePeriodParams'
 import { cx } from '@/shared/utils/cx'
 import type { RegionOverview } from '../types'
@@ -85,7 +86,7 @@ export function RegionHero({ overview, updating, period, onPeriodChange }: Regio
         <PeriodSelect
           period={period}
           onChange={onPeriodChange}
-          months={overview?.period.availableMonths ?? [period.month]}
+          months={getAvailableMonths(period.year)}
         />
       </div>
     </PageHero>

@@ -6,7 +6,7 @@ import { CheckIcon, ChevronDownIcon } from './icons'
 type PeriodSelectProps = {
   period: Period
   onChange: (next: Period) => void
-  /** 고를 수 있는 달. null = 연간(전체). 백엔드 응답의 availableMonths를 그대로 넘김 */
+  /** 고를 수 있는 달. null = 연간(전체) */
   months: Array<number | null>
   years?: number[]
 }
