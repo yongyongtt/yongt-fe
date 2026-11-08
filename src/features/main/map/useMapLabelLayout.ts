@@ -1,6 +1,12 @@
 import { useLayoutEffect, type RefObject } from 'react'
 import type { RegionShape } from './demoRegionShapes'
-import { layoutMapLabels, MAP_LABEL_FONT } from './labels'
+import {
+  insetLabelPosition,
+  labelFitsBoundary,
+  layoutMapLabels,
+  MAP_LABEL_FONT,
+  MIN_MAP_LABEL_FONT,
+} from './labels'
 
 /** 화면 크기·배율·폰트 로딩이 바뀌면 실제 글자 크기로 겹침을 다시 계산한다. */
 export function useMapLabelLayout(
@@ -27,7 +33,15 @@ export function useMapLabelLayout(
         const text = group.querySelector('text')
         if (!shape || !text) return []
         const box = text.getBBox()
-        // 글자의 실제 사각형 중심이 도형의 면적 중심과 일치하도록 맞춘다.
+        const rings = shape.rings ?? [shape.points]
+        const position = insetLabelPosition(
+          shape.labelPosition,
+          ((box.width * MIN_MAP_LABEL_FONT) / MAP_LABEL_FONT + 4) / worldScale,
+          ((box.height * MIN_MAP_LABEL_FONT) / MAP_LABEL_FONT + 4) / worldScale,
+          rings,
+          worldScale,
+        )
+        // 글자의 실제 사각형 중심을 라벨 배치 좌표에 맞춘다.
         text.setAttribute(
           'transform',
           `translate(${-box.x - box.width / 2} ${-box.y - box.height / 2})`,
@@ -35,11 +49,18 @@ export function useMapLabelLayout(
         return [
           {
             code,
-            x: shape.labelPosition[0] * worldScale,
-            y: shape.labelPosition[1] * worldScale,
+            x: position[0] * worldScale,
+            y: position[1] * worldScale,
             width: box.width,
             height: box.height,
             radius: shape.labelRadius ?? 0,
+            fits: (fontSize: number) =>
+              labelFitsBoundary(
+                position,
+                ((box.width * fontSize) / MAP_LABEL_FONT + 4) / worldScale,
+                ((box.height * fontSize) / MAP_LABEL_FONT + 4) / worldScale,
+                rings,
+              ),
           },
         ]
       })
@@ -49,10 +70,9 @@ export function useMapLabelLayout(
       for (const group of groups) {
         const label = layout.get(group.dataset.mapLabel!)
         if (!label) continue
-        const shape = shapes.find((item) => item.regionCode === label.code)!
         group.setAttribute(
           'transform',
-          `translate(${shape.labelPosition.join(' ')}) scale(${label.fontSize / (MAP_LABEL_FONT * worldScale)})`,
+          `translate(${label.x / worldScale} ${label.y / worldScale}) scale(${label.fontSize / (MAP_LABEL_FONT * worldScale)})`,
         )
         group.style.visibility = label.visible ? 'visible' : 'hidden'
         group.dataset.labelFont = String(label.fontSize)

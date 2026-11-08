@@ -7,6 +7,8 @@ import {
   boundaryDistance,
   boundaryCentroid,
   layoutMapLabels,
+  labelFitsBoundary,
+  insetLabelPosition,
   MIN_MAP_LABEL_FONT,
   placeBoundaryLabel,
 } from '../src/features/main/map/labels'
@@ -115,6 +117,78 @@ test('최소 가독 크기에서도 겹치면 하나만 숨기고 선택 지역�
     'b',
   )
   assert.ok(expanded.every((label) => label.visible && label.fontSize === 14))
+})
+
+test('라벨 사각형이 지도 밖·이웃 경계·오목한 틈·구멍에 걸치면 표시하지 않는다', () => {
+  const square = [
+    [0, 0],
+    [100, 0],
+    [100, 100],
+    [0, 100],
+    [0, 0],
+  ] as const
+  const hole = [
+    [35, 35],
+    [65, 35],
+    [65, 65],
+    [35, 65],
+    [35, 35],
+  ] as const
+  const notch = [
+    [0, 0],
+    [40, 0],
+    [40, 60],
+    [60, 60],
+    [60, 0],
+    [100, 0],
+    [100, 100],
+    [0, 100],
+    [0, 0],
+  ] as const
+  assert.equal(labelFitsBoundary([50, 50], 60, 20, [square]), true)
+  assert.equal(labelFitsBoundary([10, 50], 30, 20, [square]), false)
+  assert.equal(labelFitsBoundary([50, 50], 40, 40, [square, hole]), false)
+  assert.equal(labelFitsBoundary([50, 50], 80, 40, [notch]), false)
+})
+
+test('경계를 벗어난 라벨은 먼저 줄이고 9px에도 들어가지 않을 때만 숨긴다', () => {
+  const square = [
+    [0, 0],
+    [100, 0],
+    [100, 100],
+    [0, 100],
+    [0, 0],
+  ] as const
+  const candidate = (width: number) => ({
+    code: 'a',
+    x: 50,
+    y: 50,
+    width,
+    height: 20,
+    radius: 50,
+    fits: (fontSize: number) =>
+      labelFitsBoundary([50, 50], (width * fontSize) / 14 + 4, (20 * fontSize) / 14 + 4, [square]),
+  })
+  const fitting = layoutMapLabels([candidate(120)], null)[0]
+  assert.ok(fitting.visible && fitting.fontSize < 14 && fitting.fontSize >= 9)
+  const tooWide = layoutMapLabels([candidate(180)], 'a')[0]
+  assert.equal(tooWide.fontSize, 9)
+  assert.equal(tooWide.visible, false)
+})
+
+test('가장자리 라벨만 중심 근처 안쪽으로 보정하고 이미 들어가는 중심은 유지한다', () => {
+  const square = [
+    [0, 0],
+    [100, 0],
+    [100, 100],
+    [0, 100],
+    [0, 0],
+  ] as const
+  assert.deepEqual(insetLabelPosition([50, 50], 30, 20, [square], 1), [50, 50])
+  const inset = insetLabelPosition([10, 50], 30, 20, [square], 1)
+  assert.ok(labelFitsBoundary(inset, 30, 20, [square]))
+  assert.ok(Math.hypot(inset[0] - 10, inset[1] - 50) <= 12)
+  assert.deepEqual(insetLabelPosition([50, 50], 180, 20, [square], 1), [50, 50])
 })
 test('빈 경계·잘못된 좌표·중복 코드는 오류로 구분한다', () => {
   assert.throws(() => projectBoundaries({ type: 'FeatureCollection', features: [] }), {

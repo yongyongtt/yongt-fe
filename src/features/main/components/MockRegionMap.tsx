@@ -225,7 +225,17 @@ export function MockRegionMap({
                       'stroke-white stroke-[1.5]',
                     )}
                   />
+                </g>
+              )
+            })}
+            {/* 지역 도형을 모두 그린 뒤 라벨을 올려 이웃 도형에 가리지 않게 한다. */}
+            <g data-map-labels="true" aria-hidden="true" className="pointer-events-none">
+              {visibleShapes.map((shape) => {
+                const region = byCode.get(shape.regionCode)!
+                const level = getVulnerabilityLevel(region.score)
+                return (
                   <g
+                    key={region.regionCode}
                     data-map-label={isRealMap ? region.regionCode : undefined}
                     transform={`translate(${shape.labelPosition.join(' ')})`}
                     style={isRealMap ? { visibility: 'hidden' } : undefined}
@@ -245,9 +255,9 @@ export function MockRegionMap({
                       {region.regionName}
                     </text>
                   </g>
-                </g>
-              )
-            })}
+                )
+              })}
+            </g>
             {/* 이웃 도형이 강조선을 덮지 않도록 모든 지역을 그린 뒤 테두리를 겹친다. */}
             <g aria-hidden="true" className="pointer-events-none">
               {visibleShapes

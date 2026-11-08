@@ -119,6 +119,7 @@ test('실제 지도는 38개 지역을 유지하고 시각 라벨에 구를 넣�
       />,
     )
     assert.equal((html.match(/data-region-label=/g) ?? []).length, 38)
+    assert.ok(html.indexOf('data-map-labels=') > html.lastIndexOf('stroke-white'))
     for (const shape of shapes) {
       assert.ok(html.includes(`data-region-label="${shape.regionCode}"`))
       assert.ok(html.includes(`${shape.regionName}</text>`))
