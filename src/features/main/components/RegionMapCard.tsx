@@ -60,7 +60,7 @@ export function RegionMapCard({
   const selected = mappedRegions.find((region) => region.regionCode === selectedRegionCode)
 
   return (
-    <Card className="flex min-h-[480px] min-w-0 flex-col xl:min-h-[816px]">
+    <Card className="flex min-h-[480px] min-w-0 animate-fade-up flex-col [animation-delay:320ms] xl:min-h-[816px]">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-10 px-7 py-5">
         <h2 className="text-lg font-bold">종합 취약도</h2>
         <span className="rounded bg-gray-5 px-2 py-1 text-xs font-medium text-gray-60">
