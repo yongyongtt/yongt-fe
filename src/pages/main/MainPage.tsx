@@ -1,46 +1,117 @@
-import { Link } from 'react-router'
+import { useReducer } from 'react'
+import { useNavigate } from 'react-router'
 import { paths } from '@/app/paths'
+import { DashboardPanels } from '@/features/main/components/DashboardPanels'
+import { MockDataDisclosure } from '@/features/main/components/MockDataDisclosure'
+import { SummaryCards } from '@/features/main/components/SummaryCards'
+import { useDashboard } from '@/features/main/hooks'
+import { initialSelection, selectionReducer } from '@/features/main/selection'
+import { ApiError } from '@/shared/api/client'
+import { USE_MOCK } from '@/shared/api/mock'
 import { Card } from '@/shared/components/Card'
+import { EmptyState } from '@/shared/components/EmptyState'
 import { PageHero } from '@/shared/components/PageHero'
 import { PeriodSelect } from '@/shared/components/PeriodSelect'
+import { HomeIcon } from '@/shared/components/icons'
+import { DEFAULT_YEAR } from '@/shared/constants/period'
 import { usePeriodParams } from '@/shared/hooks/usePeriodParams'
 
-/*
- 메인 대시보드 (지도)
- - 아래 히어로와 예시 카드는 자리 표시용이라 자유롭게 바꿔도 됨
- */
+/** 지도·검색·목록의 선택과 우측 미리보기 상태를 함께 관리한다. */
 export function MainPage() {
+  const navigate = useNavigate()
   const { period, setPeriod } = usePeriodParams()
+  const [selection, dispatch] = useReducer(selectionReducer, initialSelection)
+  const dashboard = useDashboard(period)
+  const periodNotFound =
+    dashboard.error instanceof ApiError && dashboard.error.code === 'PERIOD_NOT_FOUND'
+  const periodLabel = `${period.year}년 ${period.month === null ? '연간' : `${period.month}월`}`
 
   return (
     <>
-      <PageHero className="h-[236px]">
-        <div className="flex items-start justify-between pt-[49px]">
-          <div>
-            <h1 className="text-[40px] leading-[48px] font-bold tracking-[-0.03em] text-white">
+      <PageHero className="min-h-[272px]">
+        <nav
+          aria-label="현재 위치"
+          className="flex animate-fade-up items-center gap-2 pt-9 text-sm tracking-[-0.01em]"
+        >
+          <HomeIcon className="text-white" />
+          <span aria-current="page" className="font-medium text-white">
+            메인 대시보드
+          </span>
+        </nav>
+        <div className="flex flex-col items-start gap-7 pt-7 pb-24 xl:flex-row xl:justify-between xl:pb-0">
+          <div className="min-w-0">
+            <h1 className="text-[30px] leading-[1.3] font-bold tracking-[-0.03em] text-white lg:text-[40px] lg:leading-[48px]">
               용인시 교통 취약지역 현황
             </h1>
-            <p className="mt-4 text-base text-hero-sub">
+            <p className="mt-4 text-base leading-7 text-hero-sub lg:text-lg">
               읍·면·동별 교통 수요와 공급의 불균형을 지도 한 장으로 확인할 수 있습니다.
             </p>
           </div>
-          <PeriodSelect period={period} onChange={setPeriod} months={[null, 2]} />
+          <div className="max-w-full shrink-0 xl:pt-[13px] [&>div]:flex-wrap">
+            <PeriodSelect
+              period={period}
+              onChange={setPeriod}
+              months={dashboard.data?.period.availableMonths ?? []}
+            />
+            <p className="mt-3 text-sm leading-5 text-hero-sub xl:text-right">
+              데이터 기준: {periodLabel}
+              {USE_MOCK ? ' · 시연용 데이터' : ''}
+            </p>
+          </div>
         </div>
       </PageHero>
 
-      <div className="container-page py-10">
-        <Card className="p-8">
-          <p className="text-lg font-bold">지도 · 우선 해결 지역 순위 영역 (작업 예정)</p>
-          <p className="mt-2 text-gray-60">
-            상세 페이지 이동 예시:{' '}
-            <Link
-              to={paths.regionDetail('4146134000', period)}
-              className="font-medium text-primary-60 underline"
-            >
-              원삼면 상세 보기
-            </Link>
-          </p>
-        </Card>
+      <div className="relative container-page -mt-14 flex flex-col gap-6 pb-[72px]">
+        <SummaryCards
+          summary={dashboard.error ? undefined : dashboard.data?.summary}
+          isPending={dashboard.isPending}
+        />
+        <div className="sr-only" role="status" aria-live="polite">
+          {periodLabel} 데이터를{' '}
+          {dashboard.isPending
+            ? '불러오는 중입니다.'
+            : dashboard.error
+              ? '불러오지 못했습니다.'
+              : '불러왔습니다.'}
+        </div>
+        {dashboard.error && (
+          <Card className="p-6">
+            <EmptyState
+              title={
+                periodNotFound ? '해당 기간의 데이터가 없습니다.' : '데이터를 불러오지 못했습니다.'
+              }
+              description={
+                periodNotFound
+                  ? '연간 조회로 돌아간 후 제공되는 월을 선택해 주세요.'
+                  : '잠시 후 다시 시도해 주세요.'
+              }
+              action={
+                periodNotFound
+                  ? {
+                      label: '기본 연간 조회로 돌아가기',
+                      onClick: () => setPeriod({ year: DEFAULT_YEAR, month: null }),
+                    }
+                  : { label: '다시 시도', onClick: () => void dashboard.refetch() }
+              }
+            />
+          </Card>
+        )}
+        <div className="mt-4">
+          <DashboardPanels
+            period={period}
+            selectedRegionCode={selection.regionCode}
+            onSelectRegion={(regionCode, focusMap) =>
+              dispatch({ type: 'select', regionCode, focusMap })
+            }
+            mode={selection.mode}
+            onBack={() => dispatch({ type: 'back' })}
+            focusRequest={selection.focusRequest}
+            onOpenRegionDetail={(regionCode, selectedPeriod) => {
+              void navigate(paths.regionDetail(regionCode, selectedPeriod))
+            }}
+          />
+        </div>
+        {USE_MOCK && <MockDataDisclosure />}
       </div>
     </>
   )
