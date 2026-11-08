@@ -99,7 +99,7 @@ export function PriorityRanking({
       <div className="shrink-0 p-6">
         {USE_MOCK && (
           <p className="mb-3 text-xs leading-5 text-gray-50">
-            시연용 5개 지역 · 상세 목업의 전체 지역 기준 순위입니다.
+            시연용 목업 중 1~10위 지역만 표시합니다. 현재 제공되는 지역은 {regions.length}개입니다.
           </p>
         )}
         <div className="flex items-start gap-2.5 rounded-lg bg-gray-5 px-4 py-3.5 text-sm leading-[21px] text-gray-50">

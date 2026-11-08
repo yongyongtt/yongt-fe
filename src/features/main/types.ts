@@ -15,7 +15,7 @@ export type Dashboard = {
     vulnerableRegions: number
     averageVulnerabilityScore: number | null
   }
-  /** 최대 10개. 목업에 없는 지역을 임의로 추가하지 않는다. */
+  /** 전체 지역 기준 1~10위만. 목업에 없는 순위를 임의로 채우지 않는다. */
   topRegions: DashboardRegion[]
 }
 

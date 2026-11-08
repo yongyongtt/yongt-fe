@@ -4,8 +4,14 @@ import { getVulnerabilityLevel } from './map/vulnerability'
 
 export function getPriorityRegions(regions: DashboardRegion[]) {
   return regions
-    .filter((region) => getVulnerabilityLevel(region.score) !== null)
-    .sort((a, b) => b.score! - a.score! || a.rank - b.rank)
+    .filter(
+      (region) =>
+        Number.isInteger(region.rank) &&
+        region.rank >= 1 &&
+        region.rank <= 10 &&
+        getVulnerabilityLevel(region.score) !== null,
+    )
+    .sort((a, b) => a.rank - b.rank)
     .slice(0, 10)
 }
 

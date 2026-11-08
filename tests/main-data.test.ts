@@ -19,12 +19,17 @@ test('연간/2월의 메인 지역·점수·순위·기간은 상세 목업과 �
     assert.equal(dashboard.summary.totalRegions, 5)
     assert.equal(dashboard.summary.vulnerableRegions, 4)
     assert.equal(dashboard.summary.averageVulnerabilityScore, month === null ? 54 : 57)
-    assert.equal(dashboard.topRegions.length, 5)
+    assert.equal(dashboard.topRegions.length, 4)
     assert.deepEqual(
       dashboard.topRegions.map((region) => region.rank),
-      [1, 3, 5, 7, 35],
+      [1, 3, 5, 7],
     )
-    assert.deepEqual(map.regions, dashboard.topRegions)
+    assert.equal(map.regions.length, 5)
+    assert.ok(map.regions.some((region) => region.rank === 35))
+    assert.deepEqual(
+      dashboard.topRegions,
+      map.regions.filter((region) => region.rank <= 10),
+    )
     const details = await Promise.all(
       map.regions.map((region) => mockGetOverview(region.regionCode, period)),
     )

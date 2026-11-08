@@ -5,7 +5,11 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { DashboardRightPanel } from '../src/features/main/components/DashboardRightPanel'
 import { RegionPreviewContent } from '../src/features/main/components/RegionPreviewContent'
 import { mainKeys } from '../src/features/main/hooks'
-import { mockGetDashboard, mockGetRegionPreview } from '../src/features/main/mocks'
+import {
+  mockGetDashboard,
+  mockGetDashboardMap,
+  mockGetRegionPreview,
+} from '../src/features/main/mocks'
 import { getPriorityRegions, getRecommendedOptions } from '../src/features/main/preview'
 import { initialSelection, selectionReducer } from '../src/features/main/selection'
 import type { DashboardRegion } from '../src/features/main/types'
@@ -51,25 +55,28 @@ test('목록 복귀는 선택과 지도 포커스 요청을 보존하고 같은 
   assert.equal(next.focusRequest?.version, 3)
 })
 
-test('우선 순위는 점수 순서로 최대 10개이며 null은 빼고 0점과 기존 순위는 보존한다', () => {
+test('TOP10은 1~10위만 표시하고 null은 제외하되 0점과 원래 순위는 보존한다', () => {
   const base: DashboardRegion = {
     regionCode: 'a',
     regionName: '지역',
     gu: '처인구',
     score: 0,
-    rank: 35,
+    rank: 10,
   }
   const regions = [
     { ...base, score: null },
     { ...base, regionCode: 'zero' },
     { ...base, regionCode: 'high', score: 70, rank: 3 },
+    { ...base, regionCode: 'eleventh', score: 99, rank: 11 },
+    { ...base, regionCode: 'thirty-fifth', score: 100, rank: 35 },
+    ...[0, -1, 1.5, NaN, Infinity].map((rank) => ({ ...base, rank })),
   ]
   const result = getPriorityRegions(regions)
   assert.deepEqual(
     result.map((region) => region.regionCode),
     ['high', 'zero'],
   )
-  assert.equal(result[1].rank, 35)
+  assert.equal(result[1].rank, 10)
   assert.equal(regions[0].score, null)
   assert.equal(
     getPriorityRegions(
@@ -77,6 +84,7 @@ test('우선 순위는 점수 순서로 최대 10개이며 null은 빼고 0점�
         ...base,
         regionCode: String(index),
         score: index,
+        rank: index + 1,
       })),
     ).length,
     10,
@@ -95,14 +103,37 @@ test('추천 조합은 상세의 추천된 대안만 사용하고 제외 대안�
   assert.ok(!html.includes('정류장 추가'))
 })
 
-test('기본 목록은 5개 목업의 실제 순위를 유지한다', async () => {
+test('기본 TOP10 목록에는 1·3·5·7위만 표시하고 35위는 제외한다', async () => {
   const client = createClient()
   try {
     client.setQueryData(mainKeys.dashboard(period), await mockGetDashboard(period))
     const html = renderPanel(client, null, 'ranking')
-    assert.equal((html.match(/data-region-code=/g) ?? []).length, 5)
-    assert.ok(html.includes('18점 · 35위'))
+    assert.equal((html.match(/data-region-code=/g) ?? []).length, 4)
+    assert.ok(!html.includes('18점 · 35위'))
+    assert.ok(!html.includes('풍덕천1동'))
     assert.ok(!html.includes('선택 지역 미리보기'))
+  } finally {
+    client.clear()
+  }
+})
+
+test('35위 지역은 TOP10 응답에서 제외하되 지도와 직접 선택 미리보기에서는 유지한다', async () => {
+  const client = createClient()
+  try {
+    const [dashboard, map, preview] = await Promise.all([
+      mockGetDashboard(period),
+      mockGetDashboardMap(period),
+      mockGetRegionPreview('4146551000', period),
+    ])
+    assert.ok(!dashboard.topRegions.some((region) => region.rank > 10))
+    assert.ok(
+      map.regions.some((region) => region.regionCode === '4146551000' && region.rank === 35),
+    )
+    client.setQueryData(mainKeys.preview('4146551000', period), preview)
+    const html = renderPanel(client, '4146551000', 'preview')
+    assert.ok(html.includes('>풍덕천1동</h3>'))
+    assert.ok(html.includes('18점 · 35위'))
+    assert.ok(html.includes('현행 유지'))
   } finally {
     client.clear()
   }
