@@ -126,10 +126,8 @@ export function RegionMapCard({
           </>
         )}
         <p className="text-xs leading-5 text-gray-50">
-          {USE_MOCK
-            ? '실제 위치·면적과 무관한 도식입니다. '
-            : '제공된 38개 읍·면·동 경계를 지역 코드로 연결했습니다. '}
-          손 도구를 켜면 드래그·방향키로 이동하고, 지도에서 Home 키를 누르면 전체 보기로 돌아갑니다.
+          {USE_MOCK && '실제 위치·면적과 무관한 도식입니다. '}손 도구를 켜면 드래그·방향키로
+          이동합니다. 지도에 초점을 둔 상태에서 키보드의 Home 키를 누르면 전체 보기로 돌아갑니다.
         </p>
         <p role="status" aria-live="polite" className="sr-only">
           {selected

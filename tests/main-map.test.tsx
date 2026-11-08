@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import { readFileSync } from 'node:fs'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MockRegionMap } from '../src/features/main/components/MockRegionMap'
@@ -11,6 +12,7 @@ import { mockGetDashboardMap } from '../src/features/main/mocks'
 import type { DashboardMap, DashboardRegion } from '../src/features/main/types'
 import { ApiError } from '../src/shared/api/client'
 import { INITIAL_VIEWPORT } from '../src/features/main/map/viewport'
+import { projectBoundaries } from '../src/features/main/map/boundaries'
 
 const period = { year: 2025, month: null }
 const region: DashboardRegion = {
@@ -92,6 +94,38 @@ test('응답이 없는 도형과 도형이 없는 지역에 선택 버튼을 만
     />,
   )
   assert.ok(!html.includes('role="button"'))
+})
+
+test('실제 지도는 38개 지역을 유지하고 시각 라벨에 구를 넣지 않는다', () => {
+  const shapes = projectBoundaries(
+    JSON.parse(readFileSync(`${process.cwd()}/public/data/yongin-dong.geojson`, 'utf8')),
+  )
+  for (const scale of [1, 3.5]) {
+    const html = renderToStaticMarkup(
+      <MockRegionMap
+        {...mapControls}
+        viewport={{ scale, tx: 0, ty: 0 }}
+        regions={shapes.map((shape, i) => ({
+          regionCode: shape.regionCode,
+          regionName: shape.regionName,
+          gu: shape.gu,
+          score: 50,
+          rank: i + 1,
+        }))}
+        shapes={shapes}
+        isRealMap
+        selectedRegionCode={null}
+        onSelectRegion={noop}
+      />,
+    )
+    assert.equal((html.match(/data-region-label=/g) ?? []).length, 38)
+    for (const shape of shapes) {
+      assert.ok(html.includes(`data-region-label="${shape.regionCode}"`))
+      assert.ok(html.includes(`${shape.regionName}</text>`))
+      assert.ok(!html.includes(`${shape.gu}</tspan>`))
+      assert.ok(html.includes(`aria-label="${shape.regionName} · ${shape.gu}`))
+    }
+  }
 })
 
 test('지도 카드는 조회 중·오류·빈 지도 상태를 분리한다', () => {
