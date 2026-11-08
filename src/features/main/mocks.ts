@@ -2,6 +2,7 @@ import { mockGetOverview, mockGetRecommendation } from '@/features/region-detail
 import { ApiError } from '@/shared/api/client'
 import type { Period } from '@/shared/hooks/usePeriodParams'
 import type { Dashboard, DashboardMap, RegionPreview } from './types'
+import { getPriorityRegions } from './preview'
 
 /** 상세 목업에서 지원하는 코드만 사용. 내용과 기간 검증은 기존 조회 함수를 재사용한다. */
 const REGION_CODES = ['4146134000', '4146135000', '4146136000', '4146125000', '4146551000'] as const
@@ -30,7 +31,7 @@ export async function mockGetDashboard(period: Period): Promise<Dashboard> {
         10,
     },
     // 상세의 전체 지역 기준 순위를 보존한다. 5개 표본 내 순위로 다시 매기지 않는다.
-    topRegions: regions.sort((a, b) => a.rank - b.rank).slice(0, 10),
+    topRegions: getPriorityRegions(regions),
   }
 }
 

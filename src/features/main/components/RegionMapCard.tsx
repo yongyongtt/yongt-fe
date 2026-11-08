@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { MapFocusRequest } from '../selection'
 import { Card } from '@/shared/components/Card'
 import { EmptyState } from '@/shared/components/EmptyState'
 import { Skeleton } from '@/shared/components/Skeleton'
@@ -18,11 +19,38 @@ type RegionMapCardProps = {
   period: Period
   selectedRegionCode: string | null
   onSelectRegion: (regionCode: string) => void
+  focusRequest?: MapFocusRequest | null
 }
 
-export function RegionMapCard({ period, selectedRegionCode, onSelectRegion }: RegionMapCardProps) {
-  const [viewport, setViewport] = useState<MapViewport>({ ...INITIAL_VIEWPORT })
-  const [panMode, setPanMode] = useState(false)
+export function RegionMapCard({
+  period,
+  selectedRegionCode,
+  onSelectRegion,
+  focusRequest,
+}: RegionMapCardProps) {
+  type Camera = { viewport: MapViewport; panMode: boolean; focusRequest: MapFocusRequest | null }
+  const [camera, setCamera] = useState<Camera>({
+    viewport: { ...INITIAL_VIEWPORT },
+    panMode: false,
+    focusRequest: null,
+  })
+  // 외부 선택 요청은 표시할 지도 상태에 반영하고, 다음 지도 조작 시 저장한다.
+  const resolveCamera = (current: Camera): Camera => {
+    if (!focusRequest || current.focusRequest === focusRequest) return current
+    const shape = demoRegionShapes.find((item) => item.regionCode === focusRequest.regionCode)
+    return shape ? { viewport: focusRegionViewport(shape), panMode: false, focusRequest } : current
+  }
+  const { viewport, panMode } = resolveCamera(camera)
+  const setViewport = (next: MapViewport | ((current: MapViewport) => MapViewport)) =>
+    setCamera((current) => {
+      const resolved = resolveCamera(current)
+      return { ...resolved, viewport: typeof next === 'function' ? next(resolved.viewport) : next }
+    })
+  const setPanMode = (next: boolean | ((current: boolean) => boolean)) =>
+    setCamera((current) => {
+      const resolved = resolveCamera(current)
+      return { ...resolved, panMode: typeof next === 'function' ? next(resolved.panMode) : next }
+    })
   const map = useDashboardMap(period)
   const regions = map.error ? [] : (map.data?.regions ?? [])
   const mappedRegions = regions.filter((region) =>

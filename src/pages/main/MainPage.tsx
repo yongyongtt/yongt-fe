@@ -1,10 +1,11 @@
-import { useState } from 'react'
-import { Link } from 'react-router'
+import { useReducer } from 'react'
+import { useNavigate } from 'react-router'
 import { paths } from '@/app/paths'
 import { DashboardPanels } from '@/features/main/components/DashboardPanels'
 import { MockDataDisclosure } from '@/features/main/components/MockDataDisclosure'
 import { SummaryCards } from '@/features/main/components/SummaryCards'
 import { useDashboard } from '@/features/main/hooks'
+import { initialSelection, selectionReducer } from '@/features/main/selection'
 import { ApiError } from '@/shared/api/client'
 import { USE_MOCK } from '@/shared/api/mock'
 import { Card } from '@/shared/components/Card'
@@ -14,10 +15,11 @@ import { PeriodSelect } from '@/shared/components/PeriodSelect'
 import { DEFAULT_YEAR } from '@/shared/constants/period'
 import { usePeriodParams } from '@/shared/hooks/usePeriodParams'
 
-/** 메인 대시보드. 지도와 우측 패널 기능은 후속 브랜치에서 연결한다. */
+/** 지도·검색·목록의 선택과 우측 미리보기 상태를 함께 관리한다. */
 export function MainPage() {
+  const navigate = useNavigate()
   const { period, setPeriod } = usePeriodParams()
-  const [selectedRegionCode, setSelectedRegionCode] = useState<string | null>(null)
+  const [selection, dispatch] = useReducer(selectionReducer, initialSelection)
   const dashboard = useDashboard(period)
   const periodNotFound =
     dashboard.error instanceof ApiError && dashboard.error.code === 'PERIOD_NOT_FOUND'
@@ -87,22 +89,17 @@ export function MainPage() {
         <div className="mt-4">
           <DashboardPanels
             period={period}
-            selectedRegionCode={selectedRegionCode}
-            onSelectRegion={setSelectedRegionCode}
+            selectedRegionCode={selection.regionCode}
+            onSelectRegion={(regionCode) => dispatch({ type: 'select', regionCode })}
+            mode={selection.mode}
+            onBack={() => dispatch({ type: 'back' })}
+            focusRequest={selection.focusRequest}
+            onOpenRegionDetail={(regionCode, selectedPeriod) => {
+              void navigate(paths.regionDetail(regionCode, selectedPeriod))
+            }}
           />
         </div>
         {USE_MOCK && <MockDataDisclosure />}
-        {!dashboard.error && !dashboard.isPending && (
-          <p className="mt-2 text-gray-60">
-            상세 페이지 이동 예시:{' '}
-            <Link
-              to={paths.regionDetail('4146134000', period)}
-              className="font-medium text-primary-60 underline"
-            >
-              원삼면 상세 보기
-            </Link>
-          </p>
-        )}
       </div>
     </>
   )
