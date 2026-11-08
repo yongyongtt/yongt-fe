@@ -24,7 +24,8 @@ export function MainPage() {
   const [selection, dispatch] = useReducer(selectionReducer, initialSelection)
   const dashboard = useDashboard(period)
   const periodNotFound =
-    dashboard.error instanceof ApiError && dashboard.error.code === 'PERIOD_NOT_FOUND'
+    dashboard.error instanceof ApiError &&
+    ['PERIOD_NOT_FOUND', 'SUITABILITY_NOT_READY'].includes(dashboard.error.code)
   const periodLabel = `${period.year}년 ${period.month === null ? '연간' : `${period.month}월`}`
 
   return (

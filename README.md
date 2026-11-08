@@ -118,6 +118,7 @@ const { period, setPeriod } = usePeriodParams() // period = { year: 2025, month:
 ```
 
 - 월 목록은 백엔드 응답의 `availableMonths`로만 채움 (없는 달을 요청하면 404)
+- **메인 한정 임시 예외:** 백엔드 최신화로 API 1의 `availableYears`·`availableMonths`가 삭제되어, 조회 가능 기간 목록 API가 제공될 때까지 `src/features/main/period.ts`에 공지된 **2025년 전체·1~7월**을 설정한다. `period.months`는 현재 응답의 집계 대상 월이므로 선택 가능 목록으로 사용하지 않는다. 공통 기간 컴포넌트와 상세페이지는 이번 예외 적용 범위에 포함하지 않는다.
 
 ### 2. 페이지 이동은 `paths`로
 

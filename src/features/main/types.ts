@@ -7,6 +7,9 @@ export type DashboardRegion = Omit<RegionOverview['header'], 'score'> & {
 }
 
 export type DashboardPeriod = RegionOverview['period'] & {
+  /** API 응답의 집계 대상 기간. 조회 가능한 월 목록과 다르다. */
+  months?: number[]
+  responseType?: 'YEAR_ALL' | 'YEAR_LATEST' | 'MONTH'
   availableYears?: number[]
   updatedAt?: string | null
 }
