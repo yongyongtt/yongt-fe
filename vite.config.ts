@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => {
       // 개발 중 /api 요청을 백엔드로 넘긴다 (CORS 신경 안 써도 됨)
       proxy: {
         '/api': {
-          target: env.VITE_API_PROXY_TARGET || 'http://localhost:8080',
+          target: env.VITE_API_PROXY_TARGET || 'http://43.203.57.74',
           changeOrigin: true,
         },
       },
