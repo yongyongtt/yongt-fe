@@ -127,7 +127,7 @@ export function RegionMapCard({
           실제 위치·면적과 무관한 도식입니다. 손 도구를 켜면 드래그·방향키로 이동하고, 지도에서 Home
           키를 누르면 전체 보기로 돌아갑니다.
         </p>
-        <p role="status" aria-live="polite" className="mt-auto text-[13px] leading-5 text-gray-60">
+        <p role="status" aria-live="polite" className="sr-only">
           {selected
             ? `선택 지역: ${selected.regionName} · ${selected.gu}`
             : '지도에서 지역을 클릭하거나 Tab으로 이동한 뒤 Enter 또는 Space로 선택하세요.'}
