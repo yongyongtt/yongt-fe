@@ -14,6 +14,7 @@ import {
 } from '../map/viewport'
 import { MockRegionMap } from './MockRegionMap'
 import { RegionSearch } from './RegionSearch'
+import { MethodologyPopover } from './MethodologyPopover'
 
 type RegionMapCardProps = {
   period: Period
@@ -67,18 +68,21 @@ export function RegionMapCard({
         </span>
       </div>
       <div className="flex flex-1 flex-col gap-4 p-4 sm:p-7">
-        <RegionSearch
-          key={`${period.year}-${period.month}`}
-          regions={mappedRegions}
-          disabled={map.isPending || Boolean(map.error)}
-          onSelectRegion={(code) => {
-            const shape = demoRegionShapes.find((item) => item.regionCode === code)
-            if (!shape) return
-            onSelectRegion(code)
-            setViewport(focusRegionViewport(shape))
-            setPanMode(false)
-          }}
-        />
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <RegionSearch
+            key={`${period.year}-${period.month}`}
+            regions={mappedRegions}
+            disabled={map.isPending || Boolean(map.error)}
+            onSelectRegion={(code) => {
+              const shape = demoRegionShapes.find((item) => item.regionCode === code)
+              if (!shape) return
+              onSelectRegion(code)
+              setViewport(focusRegionViewport(shape))
+              setPanMode(false)
+            }}
+          />
+          <MethodologyPopover />
+        </div>
         {map.isPending ? (
           <div role="status">
             <span className="sr-only">지도 데이터를 불러오는 중입니다.</span>

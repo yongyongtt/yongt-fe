@@ -70,6 +70,15 @@ UI 구현 시 `MAIN_MOCK_NOTICE`로 가상 지도 및 표본 데이터임을 고
 - 상세 CTA는 `onOpenRegionDetail(regionCode, period)`를 통해 MainPage의 `navigate(paths.regionDetail(regionCode, period))`에 연결한다. 연간 조회는 month 없이, 월간 조회는 선택 월을 유지한다. 임시 원삼면 상세 링크는 제거했으며 기존 상세 페이지/공통 라우팅은 변경하지 않았다. 컴포넌트 단독 사용 시 콜백이 없으면 준비 중 안내를 표시한다.
 - `feature/main-preview`도 최신 develop에서 생성하고 선행 로컬 커밋들을 cherry-pick했다. 앞선 PR 병합 후 이번 기능만 보이도록 대조한다.
 
+## 분석 기준 팝오버
+
+- `MethodologyPopover`는 기존 Radix Popover를 사용한다. Figma `176:2084`에는 버튼만 있어 버튼은 디자인을 따르고, 본문은 요청 폴더의 시연용 분석 단위·점수 방향·출처·모델 버전을 표시한다. 실제 산식이나 가중치를 임의로 추가하지 않는다.
+- 지도 색상 구간은 `map/vulnerability.ts`의 범례 데이터를 재사용한다. 실제 취약지역 판정 기준과 구분해 설명한다.
+- Portal의 z-50 레이어로 지도 도구(z-10)와 검색(z-30)보다 앞에 표시한다. 지도 SVG 밖에 렌더링하며 내부 포인터/키보드 이벤트의 전파를 차단한다.
+- 닫기 버튼·Escape·바깥 클릭을 지원한다. 닫기/Escape 이후 트리거로 초점을 복귀하며, 화면 가장자리 충돌 방지와 내부 스크롤로 좁은 화면에 맞춘다.
+- `feature/main-methodology`는 최신 develop에서 생성 후 미병합 선행 작업을 cherry-pick했다. 로컬 커밋만 진행하며 원격 푸시는 보류한다.
+- 브라우저에서 열기/닫기 버튼·Escape·바깥 클릭·닫은 뒤 초점 복귀를 확인했다. 손 도구 활성 상태의 팝오버 내부 방향키/드래그는 지도 위치를 바꾸지 않는다. 390px 화면에서도 팝오버가 화면 안에 배치되고 긴 내용은 내부 스크롤로 표시된다.
+
 ## 검증
 
 프로젝트 의존성 설치 후 Vite/React Router가 지원하는 Node 환경에서 실행한다.
