@@ -2,6 +2,7 @@ export type RegionShape = {
   regionCode: string
   points: ReadonlyArray<readonly [number, number]>
   labelPosition: readonly [number, number]
+  labelRadius?: number
   rings?: ReadonlyArray<ReadonlyArray<readonly [number, number]>>
 }
 
