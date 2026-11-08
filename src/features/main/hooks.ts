@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import type { Period } from '@/shared/hooks/usePeriodParams'
 import { fetchDashboard, fetchDashboardMap, fetchRegionPreview } from './api'
+import { fetchBoundaries } from './map/boundaries'
+import { USE_MOCK } from '@/shared/api/mock'
 
 export const mainKeys = {
   all: ['main'] as const,
@@ -8,6 +10,15 @@ export const mainKeys = {
   map: (period: Period) => [...mainKeys.all, 'map', period] as const,
   preview: (regionCode: string | null, period: Period) =>
     [...mainKeys.all, 'preview', regionCode, period] as const,
+}
+
+export function useMapBoundaries() {
+  return useQuery({
+    queryKey: [...mainKeys.all, 'boundaries'],
+    queryFn: fetchBoundaries,
+    staleTime: Infinity,
+    enabled: !USE_MOCK,
+  })
 }
 
 export function useDashboard(period: Period) {
