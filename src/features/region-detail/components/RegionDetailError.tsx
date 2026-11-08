@@ -32,7 +32,8 @@ export function RegionDetailError({
     )
   }
 
-  if (code === 'PERIOD_NOT_FOUND') {
+  // 없는 연도는 PERIOD_NOT_FOUND, 없는 달은 SUITABILITY_NOT_READY
+  if (code === 'PERIOD_NOT_FOUND' || code === 'SUITABILITY_NOT_READY') {
     return (
       <EmptyState
         title="해당 기간의 데이터가 아직 없습니다."

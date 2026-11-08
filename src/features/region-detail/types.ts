@@ -1,5 +1,12 @@
 // 백엔드 docs/api-spec.md(v3) API 4~7 응답의 data 부분
 
+/** 응답마다 붙는 기간 정보. 연간은 months가 1~12 전부 */
+export type ApiPeriod = {
+  year: number
+  months: number[]
+  type: 'MONTH' | 'YEAR_ALL' | 'YEAR_LATEST'
+}
+
 /** API 4. GET /api/regions/{regionCode} */
 export type RegionOverview = {
   header: {
@@ -9,12 +16,7 @@ export type RegionOverview = {
     score: number
     rank: number
   }
-  period: {
-    year: number
-    month: number | null
-    /** null = 연간 */
-    availableMonths: Array<number | null>
-  }
+  period: ApiPeriod
   reliability: {
     low: boolean
     note: string | null

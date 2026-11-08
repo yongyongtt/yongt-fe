@@ -22,7 +22,7 @@ import type {
 */
 
 const YEAR = 2025
-const AVAILABLE_MONTHS: Array<number | null> = [null, 2]
+export const MOCK_AVAILABLE_MONTHS: Array<number | null> = [null, 2]
 
 const CODE = {
   wonsam: '4146134000',
@@ -124,7 +124,7 @@ const LOW_RELIABILITY_NOTE =
 // ---------- 에러 확인 ----------
 
 function checkPeriod(year: number, month: number | null) {
-  if (year !== YEAR || !AVAILABLE_MONTHS.includes(month)) {
+  if (year !== YEAR || !MOCK_AVAILABLE_MONTHS.includes(month)) {
     return mockError('PERIOD_NOT_FOUND', '해당 기간의 데이터가 아직 없습니다.')
   }
   return null
@@ -156,7 +156,10 @@ export function mockGetOverview(regionCode: string, { year, month }: Period) {
       score: isMonth ? region.score + 3 : region.score,
       rank: region.rank,
     },
-    period: { year, month, availableMonths: AVAILABLE_MONTHS },
+    period:
+      month === null
+        ? { year, months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], type: 'YEAR_ALL' }
+        : { year, months: [month], type: 'MONTH' },
     reliability:
       regionCode === CODE.baegam
         ? { low: true, note: LOW_RELIABILITY_NOTE }
