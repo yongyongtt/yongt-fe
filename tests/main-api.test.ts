@@ -24,6 +24,7 @@ test('실제 분기에서 공통 apiGet으로 메인 3개 경로만 호출한다
       {
         ...region,
         period: responsePeriod,
+        typePeriod: { year: 2025, months: [7], type: 'YEAR_LATEST' },
         type: null,
         isKeep: false,
         recommended: [{ mode: 'DRT', name: '똑버스' }],
@@ -36,7 +37,9 @@ test('실제 분기에서 공통 apiGet으로 메인 3개 경로만 호출한다
     }
     assert.equal((await fetchDashboard(period)).summary.totalRegions, 38)
     assert.equal((await fetchDashboardMap(period)).regions[0].score, 60)
-    assert.equal((await fetchRegionPreview(region.regionCode, period)).summary, '추천 요약')
+    const preview = await fetchRegionPreview(region.regionCode, period)
+    assert.equal(preview.summary, '추천 요약')
+    assert.deepEqual(preview.typePeriod?.months, [7])
     assert.deepEqual(urls, [
       '/api/dashboard?year=2025',
       '/api/dashboard/map?year=2025',

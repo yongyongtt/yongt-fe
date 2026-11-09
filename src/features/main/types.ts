@@ -38,6 +38,8 @@ export type DashboardMap = {
 export type RegionPreview = {
   header: DashboardRegion
   period: DashboardPeriod
+  /** 유형·추천은 연간 점수와 달리 최신 월 자료일 수 있다. */
+  typePeriod?: DashboardPeriod | null
   type: Pick<NonNullable<RegionOverview['type']>, 'name' | 'desc'> | null
   reliability?: RegionOverview['reliability']
   recommended?: Array<{ mode: string; name: string }> | null

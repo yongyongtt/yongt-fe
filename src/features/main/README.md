@@ -1,5 +1,10 @@
 # 메인 데이터 계층
 
+## 미리보기 기준 기간
+
+- API 3의 `period`는 점수·순위 기준, `typePeriod`는 유형·추천 기준으로 각각 보존하고 표시한다. 연간 점수와 최신 월 유형·추천은 서로 다른 기간이므로 `typePeriod`를 현재 URL 기간으로 대체하지 않는다.
+- `YEAR_ALL`은 `2025년 전체`, `MONTH`는 해당 월, `YEAR_LATEST`는 응답의 `months`를 사용해 `2025년 7월 (최신)`처럼 표시한다. `typePeriod`가 없는 목업·응답은 `정보 없음`으로 표시하며 기간을 임의로 추정하지 않는다. 상세 이동에는 기존 선택 URL 기간을 유지한다.
+
 ## 최신화된 API 기간 응답 대응
 
 - API 1~3의 `period: { year, months, type }`를 검증하고 현재 URL 기간과 대조한다. `MONTH`는 월간, `YEAR_ALL`은 전체 조회이며 `period.months`는 집계 기간으로 보존한다. API 1의 갱신 시각은 `data.updatedAt`에서 읽는다.
