@@ -87,6 +87,7 @@ export function adaptRegionPreview(value: unknown, period: Period): RegionPrevie
   return {
     header: adaptRegion(data),
     period: adaptMainPeriod(data.period, period),
+    typePeriod: data.typePeriod == null ? null : adaptMainPeriod(data.typePeriod),
     type: type ? { name: text(type.name), desc: text(type.desc) } : null,
     recommendation: null,
     isKeep: data.isKeep as boolean,

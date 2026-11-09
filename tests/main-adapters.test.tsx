@@ -117,3 +117,61 @@ test('월간 응답의 months 한 개로 선택 목록이 축소되지 않고 �
     [1, 1],
   )
 })
+
+test('연간 점수와 최신 월 유형·추천의 기준 기간을 구분해 표시한다', () => {
+  const preview = adaptRegionPreview(
+    {
+      ...region,
+      period: responsePeriod,
+      typePeriod: { year: 2025, months: [7], type: 'YEAR_LATEST' },
+      type: { name: '정류장 접근 취약형', desc: '정류장까지 먼 지역' },
+      isKeep: false,
+      recommended: [{ mode: 'DRT', name: '똑버스' }],
+      summary: '똑버스 도입 검토',
+    },
+    period,
+  )
+  assert.equal(preview.period.responseType, 'YEAR_ALL')
+  assert.equal(preview.typePeriod?.responseType, 'YEAR_LATEST')
+  assert.deepEqual(preview.typePeriod?.months, [7])
+  const html = renderToStaticMarkup(<RegionPreviewContent preview={preview} period={period} />)
+  assert.ok(html.includes('유형·추천은 2025년 7월 최신 자료 기준입니다.'))
+  assert.ok(!html.includes('점수·순위 기준'))
+})
+
+test('같은 기간 또는 유형 기준 기간이 없는 경우 안내를 표시하지 않는다', () => {
+  const monthly = { year: 2025, months: [3], type: 'MONTH' }
+  const data = {
+    ...region,
+    period: monthly,
+    typePeriod: monthly,
+    type: null,
+    isKeep: false,
+    recommended: null,
+    summary: null,
+  }
+  const selected = { year: 2025, month: 3 }
+  const preview = adaptRegionPreview(data, selected)
+  const html = renderToStaticMarkup(<RegionPreviewContent preview={preview} period={selected} />)
+  assert.ok(!html.includes('진단 기준 기간 안내'))
+  const sameLatest = adaptRegionPreview(
+    { ...data, typePeriod: { ...monthly, type: 'YEAR_LATEST' } },
+    selected,
+  )
+  assert.ok(
+    !renderToStaticMarkup(<RegionPreviewContent preview={sameLatest} period={selected} />).includes(
+      '진단 기준 기간 안내',
+    ),
+  )
+  const missing = adaptRegionPreview({ ...data, typePeriod: null }, selected)
+  assert.equal(missing.typePeriod, null)
+  assert.ok(
+    !renderToStaticMarkup(<RegionPreviewContent preview={missing} period={selected} />).includes(
+      '진단 기준 기간 안내',
+    ),
+  )
+  assert.throws(
+    () => adaptRegionPreview({ ...data, typePeriod: { ...monthly, months: [] } }, selected),
+    { code: 'INVALID_RESPONSE' },
+  )
+})
