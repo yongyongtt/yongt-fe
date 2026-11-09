@@ -2,7 +2,7 @@ import { Fragment, useState } from 'react'
 import { LowReliabilityBanner } from '@/features/region-detail/components/LowReliabilityBanner'
 import { USE_MOCK } from '@/shared/api/mock'
 import { EmptyState } from '@/shared/components/EmptyState'
-import { formatPreviewPeriod, getRecommendedOptions } from '../preview'
+import { getPreviewPeriodNotice, getRecommendedOptions } from '../preview'
 import type { RegionPreview } from '../types'
 import type { Period } from '@/shared/hooks/usePeriodParams'
 
@@ -23,6 +23,7 @@ export function RegionPreviewContent({
     preview.recommended ?? (recommendation ? getRecommendedOptions(recommendation) : [])
   const reasons = preview.summary ? [preview.summary] : (recommendation?.reasons ?? [])
   const isKeep = preview.isKeep ?? recommendation?.isKeep ?? false
+  const periodNotice = getPreviewPeriodNotice(preview.period, preview.typePeriod)
 
   return (
     <>
@@ -44,19 +45,14 @@ export function RegionPreviewContent({
           <p className="mt-1 text-[13px] leading-6 text-gray-50">
             {preview.header.gu} · 인공지능 진단 결과{USE_MOCK ? ' (시연용)' : ''}
           </p>
-          <dl
-            aria-label="진단 기준 기간"
-            className="mt-3 space-y-1 rounded bg-gray-5 px-3 py-2 text-xs leading-5 text-gray-60"
-          >
-            <div className="flex flex-wrap gap-x-2">
-              <dt className="font-medium text-gray-70">점수·순위 기준</dt>
-              <dd>{formatPreviewPeriod(preview.period)}</dd>
-            </div>
-            <div className="flex flex-wrap gap-x-2">
-              <dt className="font-medium text-gray-70">유형·추천 기준</dt>
-              <dd>{formatPreviewPeriod(preview.typePeriod)}</dd>
-            </div>
-          </dl>
+          {periodNotice && (
+            <p
+              aria-label="진단 기준 기간 안내"
+              className="mt-2 text-xs leading-5 break-keep text-gray-60"
+            >
+              {periodNotice}
+            </p>
+          )}
         </div>
         {preview.reliability?.low && (
           <LowReliabilityBanner
