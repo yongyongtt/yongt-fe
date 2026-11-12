@@ -7,17 +7,20 @@ import { cx } from '@/shared/utils/cx'
 import { useDashboard } from '../hooks'
 import { getPriorityRegions } from '../preview'
 import type { Period } from '@/shared/hooks/usePeriodParams'
+import { getPlanRegionStyle, type PlanRegion } from '../integrated-plans/data'
 
 type PriorityRankingProps = {
   period: Period
   selectedRegionCode: string | null
   onSelectRegion: (code: string) => void
+  planRegions?: ReadonlyMap<string, PlanRegion>
 }
 
 export function PriorityRanking({
   period,
   selectedRegionCode,
   onSelectRegion,
+  planRegions,
 }: PriorityRankingProps) {
   const dashboard = useDashboard(period)
   const regions = getPriorityRegions(dashboard.data?.topRegions ?? [])
@@ -45,50 +48,70 @@ export function PriorityRanking({
           </div>
         ) : (
           <ol className="divide-y divide-gray-5">
-            {regions.map((region, index) => (
-              <li key={region.regionCode} value={region.rank}>
-                <button
-                  type="button"
-                  data-region-code={region.regionCode}
-                  aria-pressed={selectedRegionCode === region.regionCode}
-                  aria-label={`${region.regionName} · ${region.gu} · ${region.score}점 · ${region.rank}위`}
-                  onClick={() => onSelectRegion(region.regionCode)}
-                  className="flex min-h-[57px] w-full items-center gap-2 px-4 py-3 text-left outline-none hover:bg-primary-5 focus-visible:bg-primary-5 focus-visible:ring-2 focus-visible:ring-primary-50 focus-visible:ring-inset sm:gap-3 sm:px-6"
-                >
-                  <span
-                    className={cx(
-                      'flex size-[30px] shrink-0 items-center justify-center rounded-full border text-sm font-bold tabular-nums',
-                      region.rank <= 3
-                        ? 'border-primary-50 bg-primary-50 text-white'
-                        : 'border-gray-20 text-gray-70',
-                    )}
-                  >
-                    {region.rank}
-                  </span>
-                  <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-1.5">
-                    <span className="font-bold break-keep">{region.regionName}</span>
-                    <span className="text-[13px] whitespace-nowrap text-gray-50">{region.gu}</span>
-                  </span>
-                  <span
-                    aria-hidden
-                    className="block h-1.5 w-[30%] max-w-[110px] min-w-9 shrink-0 overflow-hidden rounded-full bg-gray-10"
+            {regions.map((region, index) => {
+              const plan = planRegions
+                ? getPlanRegionStyle(planRegions.get(region.regionCode))
+                : undefined
+              return (
+                <li key={region.regionCode} value={region.rank}>
+                  <button
+                    type="button"
+                    data-region-code={region.regionCode}
+                    aria-pressed={selectedRegionCode === region.regionCode}
+                    aria-label={`${region.regionName} · ${region.gu} · ${region.score}점 · ${region.rank}위${plan ? ` · ${plan.label}` : ''}`}
+                    onClick={() => onSelectRegion(region.regionCode)}
+                    className="flex min-h-[57px] w-full items-center gap-2 px-4 py-3 text-left outline-none hover:bg-primary-5 focus-visible:bg-primary-5 focus-visible:ring-2 focus-visible:ring-primary-50 focus-visible:ring-inset sm:gap-3 sm:px-6"
                   >
                     <span
-                      className="block h-full animate-bar-grow rounded-full bg-danger-50 transition-[width] duration-500"
-                      style={{ width: `${region.score}%`, animationDelay: `${440 + index * 60}ms` }}
-                    />
-                  </span>
-                  <span
-                    className={cx(
-                      'min-w-8 shrink-0 text-right text-[17px] font-bold tabular-nums',
-                      region.score! >= 60 ? 'text-danger-50' : 'text-gray-90',
-                    )}
-                  >
-                    {region.score}
-                  </span>
-                </button>
-              </li>
-            ))}
+                      className={cx(
+                        'flex size-[30px] shrink-0 items-center justify-center rounded-full border text-sm font-bold tabular-nums',
+                        region.rank <= 3
+                          ? 'border-primary-50 bg-primary-50 text-white'
+                          : 'border-gray-20 text-gray-70',
+                      )}
+                    >
+                      {region.rank}
+                    </span>
+                    <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-1.5">
+                      <span className="font-bold break-keep">{region.regionName}</span>
+                      <span className="text-[13px] whitespace-nowrap text-gray-50">
+                        {region.gu}
+                      </span>
+                      {plan && (
+                        <span
+                          className={cx(
+                            'rounded px-1.5 py-0.5 text-xs font-semibold whitespace-nowrap',
+                            plan.badge,
+                          )}
+                        >
+                          {plan.label}
+                        </span>
+                      )}
+                    </span>
+                    <span
+                      aria-hidden
+                      className="block h-1.5 w-[30%] max-w-[110px] min-w-9 shrink-0 overflow-hidden rounded-full bg-gray-10"
+                    >
+                      <span
+                        className="block h-full animate-bar-grow rounded-full bg-danger-50 transition-[width] duration-500"
+                        style={{
+                          width: `${region.score}%`,
+                          animationDelay: `${440 + index * 60}ms`,
+                        }}
+                      />
+                    </span>
+                    <span
+                      className={cx(
+                        'min-w-8 shrink-0 text-right text-[17px] font-bold tabular-nums',
+                        region.score! >= 60 ? 'text-danger-50' : 'text-gray-90',
+                      )}
+                    >
+                      {region.score}
+                    </span>
+                  </button>
+                </li>
+              )
+            })}
           </ol>
         )}
       </div>

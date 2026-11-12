@@ -10,6 +10,12 @@ import { boundaryPath } from '../map/boundaries'
 import { useMapLabelLayout } from '../map/useMapLabelLayout'
 import { MAP_LABEL_FONT } from '../map/labels'
 import { clampViewport, INITIAL_VIEWPORT, zoomViewport, type MapViewport } from '../map/viewport'
+import {
+  getPlanRegionStyle,
+  planLegendKeys,
+  planStyles,
+  type PlanRegion,
+} from '../integrated-plans/data'
 
 type MockRegionMapProps = {
   regions: DashboardRegion[]
@@ -22,6 +28,7 @@ type MockRegionMapProps = {
   onTogglePan: () => void
   onFocusRegion?: (regionCode: string) => void
   isRealMap?: boolean
+  planRegions?: ReadonlyMap<string, PlanRegion>
 }
 
 export function MockRegionMap({
@@ -35,6 +42,7 @@ export function MockRegionMap({
   onTogglePan,
   onFocusRegion,
   isRealMap = false,
+  planRegions,
 }: MockRegionMapProps) {
   const id = useId()
   const svg = useRef<SVGSVGElement>(null)
@@ -47,6 +55,8 @@ export function MockRegionMap({
   }, [shapes, regions])
   useMapLabelLayout(svg, visibleShapes, viewport.scale, selectedRegionCode, isRealMap)
   const active = byCode.get(hoveredRegionCode ?? focusedRegionCode ?? selectedRegionCode ?? '')
+  const planStyle = (regionCode: string) =>
+    planRegions ? getPlanRegionStyle(planRegions.get(regionCode)) : undefined
   const drag = useRef<{
     pointerId: number
     x: number
@@ -169,18 +179,25 @@ export function MockRegionMap({
           }}
         >
           <title id={`${id}-title`}>
-            {isRealMap ? '용인시 지역별 종합 취약도 지도' : '지역별 종합 취약도 가상 지도'}
+            {planRegions
+              ? '용인시 통합 최적안 지도'
+              : isRealMap
+                ? '용인시 지역별 종합 취약도 지도'
+                : '지역별 종합 취약도 가상 지도'}
           </title>
           <desc id={`${id}-description`}>
-            {isRealMap
-              ? '용인시 읍·면·동별 종합 취약도를 표시한 지도입니다. '
-              : '실제 위치나 행정경계가 아닌 시연용 도형입니다. '}
+            {planRegions
+              ? '선택한 안의 투입 수단과 상태를 표시한 지도입니다. '
+              : isRealMap
+                ? '용인시 읍·면·동별 종합 취약도를 표시한 지도입니다. '
+                : '실제 위치나 행정경계가 아닌 시연용 도형입니다. '}
             Tab 키로 지역을 탐색하고 Enter 또는 Space로 선택하세요.
           </desc>
           <g transform={`translate(${viewport.tx} ${viewport.ty}) scale(${viewport.scale})`}>
             {visibleShapes.map((shape) => {
               const region = byCode.get(shape.regionCode)!
-              const regionLabel = `${region.regionName} · ${region.gu} · ${describeScore(region.score)}`
+              const style = planStyle(region.regionCode)
+              const regionLabel = `${region.regionName} · ${region.gu} · ${describeScore(region.score)}${style ? ` · ${style.label}` : ''}`
               const level = getVulnerabilityLevel(region.score)
               const selected = selectedRegionCode === region.regionCode
               return (
@@ -221,7 +238,7 @@ export function MockRegionMap({
                     vectorEffect="non-scaling-stroke"
                     className={cx(
                       'transition-colors motion-reduce:transition-none',
-                      level?.fill ?? 'fill-gray-20',
+                      style?.fill ?? level?.fill ?? 'fill-gray-20',
                       'stroke-white stroke-[1.5]',
                     )}
                   />
@@ -248,7 +265,7 @@ export function MockRegionMap({
                       dominantBaseline="central"
                       className={cx(
                         isRealMap ? 'font-bold' : 'text-[24px] font-bold sm:text-lg',
-                        level?.text ?? 'fill-gray-90',
+                        planStyle(region.regionCode)?.text ?? level?.text ?? 'fill-gray-90',
                       )}
                       style={isRealMap ? { fontSize: MAP_LABEL_FONT } : undefined}
                     >
@@ -294,6 +311,7 @@ export function MockRegionMap({
           <p>
             <strong className="text-gray-90">{active.regionName}</strong> · {active.gu} ·{' '}
             {describeScore(active.score)}
+            {planRegions && ` · ${planStyle(active.regionCode)?.label}`}
             {selectedRegionCode === active.regionCode ? ' · 선택됨' : ''}
           </p>
         ) : (
@@ -304,9 +322,26 @@ export function MockRegionMap({
           </p>
         )}
       </div>
-      <div className="mt-3 w-[258px] max-w-full sm:pointer-events-none sm:absolute sm:bottom-4 sm:left-4 sm:mt-0 sm:max-w-[calc(100%-32px)]">
-        <VulnerabilityLegend />
-      </div>
+      {planRegions ? (
+        <ul
+          aria-label="통합 최적안 지도 범례"
+          className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs text-gray-70"
+        >
+          {planLegendKeys.map((key) => {
+            const style = planStyles[key]
+            return (
+              <li key={key} className="flex items-center gap-1.5">
+                <span aria-hidden className={cx('size-3 rounded-sm', style.swatch)} />
+                {key === 'INELIGIBLE' ? '기타 미포함' : style.label}
+              </li>
+            )
+          })}
+        </ul>
+      ) : (
+        <div className="mt-3 w-[258px] max-w-full sm:pointer-events-none sm:absolute sm:bottom-4 sm:left-4 sm:mt-0 sm:max-w-[calc(100%-32px)]">
+          <VulnerabilityLegend />
+        </div>
+      )}
     </div>
   )
 }

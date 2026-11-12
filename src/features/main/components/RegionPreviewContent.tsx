@@ -12,10 +12,12 @@ export function RegionPreviewContent({
   preview,
   period,
   onOpenRegionDetail,
+  showDetail = true,
 }: {
   preview: RegionPreview
   period: Period
   onOpenRegionDetail?: OpenRegionDetail
+  showDetail?: boolean
 }) {
   const [detailNotice, setDetailNotice] = useState(false)
   const recommendation = preview.recommendation
@@ -121,24 +123,26 @@ export function RegionPreviewContent({
           )}
         </section>
       </div>
-      <div className="shrink-0 px-4 pt-3 pb-5">
-        <button
-          type="button"
-          className="min-h-12 w-full rounded bg-primary-50 px-4 py-3 text-sm font-bold text-white outline-none hover:bg-primary-60 focus-visible:ring-2 focus-visible:ring-primary-70 focus-visible:ring-offset-2"
-          onClick={() =>
-            onOpenRegionDetail
-              ? onOpenRegionDetail(preview.header.regionCode, period)
-              : setDetailNotice(true)
-          }
-        >
-          상세 진단 보기 →
-        </button>
-        {detailNotice && (
-          <p role="status" className="mt-2 text-xs leading-5 text-gray-60">
-            상세 진단 연결을 준비 중입니다.
-          </p>
-        )}
-      </div>
+      {showDetail && (
+        <div className="shrink-0 px-4 pt-3 pb-5">
+          <button
+            type="button"
+            className="min-h-12 w-full rounded bg-primary-50 px-4 py-3 text-sm font-bold text-white outline-none hover:bg-primary-60 focus-visible:ring-2 focus-visible:ring-primary-70 focus-visible:ring-offset-2"
+            onClick={() =>
+              onOpenRegionDetail
+                ? onOpenRegionDetail(preview.header.regionCode, period)
+                : setDetailNotice(true)
+            }
+          >
+            상세 진단 보기 →
+          </button>
+          {detailNotice && (
+            <p role="status" className="mt-2 text-xs leading-5 text-gray-60">
+              상세 진단 연결을 준비 중입니다.
+            </p>
+          )}
+        </div>
+      )}
     </>
   )
 }

@@ -1,11 +1,10 @@
-import { useReducer } from 'react'
 import { useNavigate } from 'react-router'
 import { paths } from '@/app/paths'
 import { DashboardPanels } from '@/features/main/components/DashboardPanels'
 import { MockDataDisclosure } from '@/features/main/components/MockDataDisclosure'
 import { SummaryCards } from '@/features/main/components/SummaryCards'
 import { useDashboard } from '@/features/main/hooks'
-import { initialSelection, selectionReducer } from '@/features/main/selection'
+import { getIntegratedPlansMock } from '@/features/main/integrated-plans/data'
 import { ApiError } from '@/shared/api/client'
 import { USE_MOCK } from '@/shared/api/mock'
 import { Card } from '@/shared/components/Card'
@@ -21,7 +20,6 @@ import { usePeriodParams } from '@/shared/hooks/usePeriodParams'
 export function MainPage() {
   const navigate = useNavigate()
   const { period, setPeriod } = usePeriodParams()
-  const [selection, dispatch] = useReducer(selectionReducer, initialSelection)
   const dashboard = useDashboard(period)
   const periodNotFound =
     dashboard.error instanceof ApiError &&
@@ -110,20 +108,16 @@ export function MainPage() {
         )}
         <div className="mt-4">
           <DashboardPanels
+            key={`${period.year}-${period.month}`}
             period={period}
-            selectedRegionCode={selection.regionCode}
-            onSelectRegion={(regionCode, focusMap) =>
-              dispatch({ type: 'select', regionCode, focusMap })
-            }
-            mode={selection.mode}
-            onBack={() => dispatch({ type: 'back' })}
-            focusRequest={selection.focusRequest}
             onOpenRegionDetail={(regionCode, selectedPeriod) => {
               void navigate(paths.regionDetail(regionCode, selectedPeriod))
             }}
           />
         </div>
-        {USE_MOCK && <MockDataDisclosure />}
+        {USE_MOCK && (
+          <MockDataDisclosure integratedDemo={getIntegratedPlansMock(period) !== null} />
+        )}
       </div>
     </>
   )
