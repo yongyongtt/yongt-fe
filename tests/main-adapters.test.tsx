@@ -29,7 +29,7 @@ test('최신 API의 KPI·전체 순위·data.updatedAt과 집계 기간을 보�
   })
   assert.equal(result.period.month, null)
   assert.deepEqual(result.period.months, responsePeriod.months)
-  assert.deepEqual(result.period.availableMonths, [null, 1, 2, 3, 4, 5, 6, 7])
+  assert.deepEqual(result.period.availableMonths, [null, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
   assert.deepEqual(result.period.availableYears, [2025])
   assert.equal(result.period.updatedAt, '2026-11-08 20:55')
   assert.deepEqual(result.topRegions, [region])
@@ -111,7 +111,7 @@ test('월간 응답의 months 한 개로 선택 목록이 축소되지 않고 �
     { year: 2025, month: 7 },
   )
   assert.equal(result.period.month, 7)
-  assert.deepEqual(result.period.availableMonths, [null, 1, 2, 3, 4, 5, 6, 7])
+  assert.deepEqual(result.period.availableMonths, [null, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
   assert.deepEqual(
     result.topRegions.map((row) => row.rank),
     [1, 1],
