@@ -239,7 +239,7 @@ export function MockRegionMap({
                     className={cx(
                       'transition-colors motion-reduce:transition-none',
                       style?.fill ?? level?.fill ?? 'fill-gray-20',
-                      style === planStyles.INELIGIBLE ? 'stroke-gray-40' : 'stroke-white',
+                      style === planStyles.INELIGIBLE ? 'stroke-gray-50' : 'stroke-white',
                       'stroke-[1.5]',
                     )}
                   />

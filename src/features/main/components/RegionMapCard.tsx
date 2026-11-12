@@ -75,7 +75,7 @@ export function RegionMapCard({
   const selected = mappedRegions.find((region) => region.regionCode === selectedRegionCode)
   const showingPlan = planRegions !== undefined
   const modeButton =
-    'min-h-9 rounded-md px-3 py-1 text-sm break-keep focus-visible:outline-2 focus-visible:outline-primary-50 aria-pressed:bg-white aria-pressed:font-bold aria-pressed:text-primary-70 disabled:opacity-55'
+    'min-h-9 rounded-md border border-transparent px-3 py-1 text-sm break-keep focus-visible:outline-2 focus-visible:outline-primary-50 aria-pressed:border-primary-60 aria-pressed:bg-primary-5 aria-pressed:font-bold aria-pressed:text-primary-70 disabled:opacity-55'
 
   return (
     <Card className="flex min-h-[480px] min-w-0 animate-fade-up flex-col [animation-delay:320ms] xl:min-h-[816px]">

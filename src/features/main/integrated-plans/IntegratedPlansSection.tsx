@@ -75,7 +75,7 @@ export function IntegratedPlansSection({
                   )}
                 >
                   <span className="flex w-full flex-wrap items-center justify-between gap-1">
-                    <span className="rounded bg-primary-5 px-2 py-0.5 text-xs font-semibold text-primary-70">
+                    <span className="rounded bg-gray-5 px-2 py-0.5 text-xs font-semibold text-gray-70">
                       {summary.planId}안
                     </span>
                     {selected && (
@@ -177,12 +177,7 @@ function PlanOrderTable({ plan, regions }: { plan: Plan; regions: DashboardRegio
       </div>
       {example && (
         <p className="text-sm leading-6 break-keep text-gray-70">
-          <span
-            className={cx(
-              'mr-2 rounded px-2 py-1 text-xs font-semibold',
-              planStyles.OVER_BUDGET.badge,
-            )}
-          >
+          <span className="mr-2 rounded bg-warning-5 px-2 py-1 text-xs font-semibold text-gray-90">
             예산 밖
           </span>
           {names.get(example.regionCode)} · 후보 {example.rank}위 · 추정 비용{' '}
