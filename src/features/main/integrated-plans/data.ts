@@ -19,28 +19,20 @@ export const integratedPlansMockMonth = mockData?.period.month
 export const planModes = ['ROUTE_BUS', 'DRT', 'HAPPY_TAXI'] as const satisfies readonly PlanMode[]
 export const planLegendKeys = [...planModes, 'KEEP', 'OVER_BUDGET', 'INELIGIBLE'] as const
 
+function transportModeStyle(label: string, textColor: string, badgeBackground: string) {
+  return {
+    label,
+    fill: `fill-current ${textColor}`,
+    badge: `${badgeBackground} ${textColor}`,
+    swatch: `bg-current ${textColor}`,
+    text: 'fill-white',
+  }
+}
+
 export const planStyles = {
-  ROUTE_BUS: {
-    label: '노선버스',
-    fill: 'fill-primary-70',
-    badge: 'bg-primary-5 text-primary-70',
-    swatch: 'bg-primary-70',
-    text: 'fill-white',
-  },
-  DRT: {
-    label: '똑버스',
-    fill: 'fill-amber-800',
-    badge: 'bg-amber-50 text-amber-800',
-    swatch: 'bg-amber-800',
-    text: 'fill-white',
-  },
-  HAPPY_TAXI: {
-    label: '행복택시',
-    fill: 'fill-teal-800',
-    badge: 'bg-teal-50 text-teal-800',
-    swatch: 'bg-teal-800',
-    text: 'fill-white',
-  },
+  ROUTE_BUS: transportModeStyle('노선버스', 'text-primary-70', 'bg-primary-5'),
+  DRT: transportModeStyle('똑버스', 'text-amber-800', 'bg-amber-50'),
+  HAPPY_TAXI: transportModeStyle('행복택시', 'text-teal-800', 'bg-teal-50'),
   KEEP: {
     label: '현행 유지',
     fill: 'fill-gray-40',
