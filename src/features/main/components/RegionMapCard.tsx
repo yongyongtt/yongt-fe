@@ -18,7 +18,7 @@ import { MockRegionMap } from './MockRegionMap'
 import { RegionSearch } from './RegionSearch'
 import { MethodologyPopover } from './MethodologyPopover'
 import { cx } from '@/shared/utils/cx'
-import type { Plan, PlanRegion } from '../integrated-plans/data'
+import type { PlanRegion } from '../integrated-plans/data'
 
 type RegionMapCardProps = {
   period: Period
@@ -26,7 +26,6 @@ type RegionMapCardProps = {
   onSelectRegion: (regionCode: string) => void
   focusRequest?: MapFocusRequest | null
   integratedDemo?: boolean
-  activePlan?: Plan['summary']
   planRegions?: ReadonlyMap<string, PlanRegion>
   onShowVulnerability?: () => void
   onShowPlan?: () => void
@@ -38,7 +37,6 @@ export function RegionMapCard({
   onSelectRegion,
   focusRequest,
   integratedDemo = false,
-  activePlan,
   planRegions,
   onShowVulnerability,
   onShowPlan,
@@ -75,23 +73,24 @@ export function RegionMapCard({
     shapes.some((shape) => shape.regionCode === region.regionCode),
   )
   const selected = mappedRegions.find((region) => region.regionCode === selectedRegionCode)
+  const showingPlan = planRegions !== undefined
   const modeButton =
     'min-h-9 rounded-md px-3 py-1 text-sm break-keep focus-visible:outline-2 focus-visible:outline-primary-50 aria-pressed:bg-white aria-pressed:font-bold aria-pressed:text-primary-70 disabled:opacity-55'
 
   return (
     <Card className="flex min-h-[480px] min-w-0 animate-fade-up flex-col [animation-delay:320ms] xl:min-h-[816px]">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-10 px-7 py-5">
-        <h2 className="text-lg font-bold">{activePlan ? '통합 최적안 지도' : '종합 취약도'}</h2>
+        <h2 className="text-lg font-bold">{showingPlan ? '통합 최적안 지도' : '종합 취약도'}</h2>
         {USE_MOCK && onShowPlan && (
           <div
             role="group"
             aria-label="지도 모드"
-            className="flex rounded-lg border border-gray-10 bg-gray-5 p-0.5 text-gray-70"
+            className="ml-auto flex rounded-lg border border-gray-10 bg-gray-5 p-0.5 text-gray-70"
           >
             <button
               type="button"
               className={modeButton}
-              aria-pressed={!activePlan}
+              aria-pressed={!showingPlan}
               onClick={onShowVulnerability}
             >
               종합 취약도
@@ -99,7 +98,7 @@ export function RegionMapCard({
             <button
               type="button"
               className={cx(modeButton, 'enabled:hover:text-primary-70')}
-              aria-pressed={Boolean(activePlan)}
+              aria-pressed={showingPlan}
               disabled={!integratedDemo}
               onClick={onShowPlan}
             >
@@ -107,16 +106,8 @@ export function RegionMapCard({
             </button>
           </div>
         )}
-        <span className="rounded bg-gray-5 px-2 py-1 text-xs font-medium text-gray-60">
-          {useRealBoundaries ? '용인시 행정동 지도' : '시연용 가상 지도'}
-        </span>
       </div>
       <div className="flex flex-1 flex-col gap-4 p-4 sm:p-7">
-        {activePlan && (
-          <p className="text-sm break-keep text-gray-60">
-            {activePlan.planId}안 {activePlan.name}의 결과를 투입 수단과 상태별로 표시합니다.
-          </p>
-        )}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <RegionSearch
             key={`${period.year}-${period.month}`}

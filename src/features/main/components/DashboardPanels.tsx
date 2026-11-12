@@ -37,7 +37,6 @@ export function DashboardPanels({ period, onOpenRegionDetail }: DashboardPanelsP
           onSelectRegion={(regionCode) => dispatch({ type: 'select', regionCode, focusMap: false })}
           focusRequest={selection.focusRequest}
           integratedDemo={demo !== null}
-          activePlan={activePlan?.summary}
           planRegions={planRegions}
           onShowVulnerability={() => setShowPlanMap(false)}
           onShowPlan={() => {

@@ -57,9 +57,9 @@ export const planStyles = {
   },
   INELIGIBLE: {
     label: '대상 제외',
-    fill: 'fill-gray-5',
+    fill: 'fill-white',
     badge: 'bg-gray-5 text-gray-70',
-    swatch: 'border border-gray-20 bg-gray-5',
+    swatch: 'border border-gray-40 bg-white',
     text: 'fill-gray-90',
   },
 }
