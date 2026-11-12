@@ -55,6 +55,7 @@ export function MainPage() {
               onChange={setPeriod}
               months={dashboard.data?.period.availableMonths ?? []}
               years={dashboard.data?.period.availableYears}
+              scrollableMonthMenu
             />
             <p className="mt-3 text-sm leading-5 text-hero-sub xl:text-right">
               데이터 기준: {periodLabel}
