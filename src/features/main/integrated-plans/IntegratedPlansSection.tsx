@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { Card } from '@/shared/components/Card'
 import { cx } from '@/shared/utils/cx'
 import type { DashboardRegion } from '../types'
@@ -33,6 +34,7 @@ export function IntegratedPlansSection({
   selectedPlan,
   onSelect,
 }: Props) {
+  const id = useId()
   return (
     <Card className="min-w-0 space-y-3 p-4 lg:p-7">
       <div className="flex flex-wrap items-center gap-2.5">
@@ -55,17 +57,15 @@ export function IntegratedPlansSection({
             {plans.map((plan) => {
               const { summary } = plan
               const selected = selectedPlan === plan
-              const metrics = [
-                ['포함 지역', `${numberFormat.format(summary.includedRegionCount)}곳`],
-                ['2개월 추정 비용', formatCost(summary.totalCost)],
-                ['65세 이상 인구', `${numberFormat.format(summary.includedSeniorPopulation)}명`],
-              ]
+              const costId = `${id}-cost-${summary.planId}`
+              const budgetUsed = summary.budget > 0 ? summary.totalCost / summary.budget : 0
               return (
                 <button
                   key={summary.planId}
                   type="button"
                   aria-label={`${summary.planId}안 ${summary.name}`}
                   aria-pressed={selected}
+                  aria-describedby={costId}
                   onClick={() => onSelect(plan)}
                   className={cx(
                     'flex min-w-0 flex-col gap-2 rounded-lg border p-4 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary-50 focus-visible:ring-offset-2 lg:p-5',
@@ -75,7 +75,12 @@ export function IntegratedPlansSection({
                   )}
                 >
                   <span className="flex w-full flex-wrap items-center justify-between gap-1">
-                    <span className="rounded bg-gray-5 px-2 py-0.5 text-xs font-semibold text-gray-70">
+                    <span
+                      className={cx(
+                        'rounded-full px-2 py-0.5 text-xs font-semibold',
+                        selected ? 'bg-primary-60 text-white' : 'bg-gray-5 text-gray-70',
+                      )}
+                    >
                       {summary.planId}안
                     </span>
                     {selected && (
@@ -84,13 +89,29 @@ export function IntegratedPlansSection({
                   </span>
                   <span className="text-xl font-bold">{summary.name}</span>
                   <span className="text-sm break-keep text-gray-60">{summary.description}</span>
-                  <span className="grid w-full grid-cols-3 gap-x-2">
-                    {metrics.map(([label, value]) => (
-                      <span key={label} className="flex flex-col gap-1">
-                        <span className="text-xs break-keep text-gray-60">{label}</span>
-                        <span className="font-bold break-keep tabular-nums">{value}</span>
+                  <span id={costId} className="flex w-full flex-wrap items-end gap-x-5 gap-y-2">
+                    <span className="flex flex-col gap-1">
+                      <span className="text-xs text-gray-60">포함 지역</span>
+                      <span className="font-bold tabular-nums">
+                        {numberFormat.format(summary.includedRegionCount)}곳
                       </span>
-                    ))}
+                    </span>
+                    <span className="flex flex-col gap-1">
+                      <span className="text-xs text-gray-60">2개월 추정 비용 / 예산</span>
+                      <span className="flex flex-wrap items-baseline gap-x-1 tabular-nums">
+                        <strong>{formatCost(summary.totalCost)}</strong>
+                        <span className="text-xs text-gray-60">/ {formatCost(summary.budget)}</span>
+                      </span>
+                    </span>
+                  </span>
+                  <span
+                    aria-hidden
+                    className="mt-1 block h-1.5 w-full overflow-hidden rounded-full bg-gray-10"
+                  >
+                    <span
+                      className="block h-full rounded-full bg-primary-50"
+                      style={{ width: `${Math.min(1, Math.max(0, budgetUsed)) * 100}%` }}
+                    />
                   </span>
                   <span className="mt-1 flex flex-wrap gap-1.5">
                     {planModes.map((mode) => (
@@ -104,6 +125,9 @@ export function IntegratedPlansSection({
                         {planStyles[mode].label} {summary.modeCounts[mode]}
                       </span>
                     ))}
+                  </span>
+                  <span className="mt-auto w-full border-t border-gray-10 pt-2 text-xs text-gray-60">
+                    65세 이상 인구 {numberFormat.format(summary.includedSeniorPopulation)}명
                   </span>
                 </button>
               )
@@ -142,36 +166,69 @@ function PlanOrderTable({ plan, regions }: { plan: Plan; regions: DashboardRegio
         tabIndex={0}
         className="max-w-full overflow-x-auto rounded-lg border border-gray-20 focus-visible:outline-2 focus-visible:outline-primary-50"
       >
-        <table className="w-full min-w-[650px] text-left text-sm">
+        <table className="w-full min-w-[650px] table-fixed text-left text-sm">
           <caption className="sr-only">{title}</caption>
+          <colgroup>
+            <col className="w-[9%]" />
+            <col className="w-[20%]" />
+            <col className="w-[33%]" />
+            <col className="w-[13%]" />
+            <col className="w-[15%]" />
+            <col className="w-[10%]" />
+          </colgroup>
           <thead className="bg-gray-5 text-gray-70">
             <tr>
-              {['투입 순서', '지역', '투입안', '수단', '2개월 추정 비용', '후보 순위'].map(
-                (label) => (
-                  <th key={label} scope="col" className="px-3 py-2.5">
-                    {label}
-                  </th>
-                ),
-              )}
+              <th scope="col" className="px-3 py-2.5 text-center">
+                순서
+              </th>
+              <th scope="col" className="px-3 py-2.5">
+                지역
+              </th>
+              <th scope="col" className="px-3 py-2.5">
+                투입안
+              </th>
+              <th scope="col" className="px-3 py-2.5 text-center">
+                수단
+              </th>
+              <th scope="col" className="px-3 py-2.5 text-right">
+                추정 비용
+              </th>
+              <th scope="col" className="px-3 py-2.5 text-center">
+                후보 순위
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-10">
-            {included.map((region) => (
-              <tr key={region.regionCode}>
-                <td className="px-3 py-2.5 font-semibold text-primary-70 tabular-nums">
-                  {region.inclusionOrder}
-                </td>
-                <th scope="row" className="px-3 py-2.5">
-                  {names.get(region.regionCode)}
-                </th>
-                <td className="px-3 py-2.5">{deploymentLabel(region)}</td>
-                <td className="px-3 py-2.5">{getPlanRegionStyle(region).label}</td>
-                <td className="px-3 py-2.5 font-semibold tabular-nums">
-                  {formatCost(region.estimatedCost)}
-                </td>
-                <td className="px-3 py-2.5">{region.rank === null ? '—' : `${region.rank}위`}</td>
-              </tr>
-            ))}
+            {included.map((region) => {
+              const modeStyle = getPlanRegionStyle(region)
+              return (
+                <tr key={region.regionCode}>
+                  <td className="px-3 py-2.5 text-center font-semibold text-primary-70 tabular-nums">
+                    {region.inclusionOrder}
+                  </td>
+                  <th scope="row" className="px-3 py-2.5">
+                    {names.get(region.regionCode)}
+                  </th>
+                  <td className="px-3 py-2.5">{deploymentLabel(region)}</td>
+                  <td className="px-3 py-2.5 text-center">
+                    <span
+                      className={cx(
+                        'inline-block rounded px-1.5 py-0.5 text-xs font-semibold whitespace-nowrap',
+                        modeStyle.badge,
+                      )}
+                    >
+                      {modeStyle.label}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2.5 text-right font-semibold whitespace-nowrap tabular-nums">
+                    {formatCost(region.estimatedCost)}
+                  </td>
+                  <td className="px-3 py-2.5 text-center tabular-nums">
+                    {region.rank === null ? '—' : `${region.rank}위`}
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>

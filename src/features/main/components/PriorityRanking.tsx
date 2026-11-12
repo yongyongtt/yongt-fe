@@ -72,15 +72,17 @@ export function PriorityRanking({
                     >
                       {region.rank}
                     </span>
-                    <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-1.5">
-                      <span className="font-bold break-keep">{region.regionName}</span>
-                      <span className="text-[13px] whitespace-nowrap text-gray-50">
-                        {region.gu}
+                    <span className="flex min-w-0 flex-1 items-center gap-x-1.5">
+                      <span className="flex min-w-0 flex-wrap items-baseline gap-x-1.5">
+                        <span className="font-bold break-keep">{region.regionName}</span>
+                        <span className="text-[13px] whitespace-nowrap text-gray-50">
+                          {region.gu}
+                        </span>
                       </span>
                       {plan && (
                         <span
                           className={cx(
-                            'rounded px-1.5 py-0.5 text-xs font-semibold whitespace-nowrap',
+                            'shrink-0 rounded px-1.5 py-0.5 text-xs font-semibold whitespace-nowrap',
                             plan.badge,
                           )}
                         >
@@ -90,7 +92,10 @@ export function PriorityRanking({
                     </span>
                     <span
                       aria-hidden
-                      className="block h-1.5 w-[30%] max-w-[110px] min-w-9 shrink-0 overflow-hidden rounded-full bg-gray-10"
+                      className={cx(
+                        'block h-1.5 max-w-[110px] shrink-0 overflow-hidden rounded-full bg-gray-10',
+                        plan ? 'w-[18%]' : 'w-[30%] min-w-9',
+                      )}
                     >
                       <span
                         className="block h-full animate-bar-grow rounded-full bg-danger-50 transition-[width] duration-500"
