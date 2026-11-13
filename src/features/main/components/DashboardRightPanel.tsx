@@ -11,19 +11,21 @@ import { cx } from '@/shared/utils/cx'
 import { useRegionPreview } from '../hooks'
 import type { DashboardSelection } from '../selection'
 import { PriorityRanking } from './PriorityRanking'
-import { RegionPreviewContent, type OpenRegionDetail } from './RegionPreviewContent'
 import type { PlanMapRegion } from '../integrated-plans/data'
+import { RegionPreviewContent, type OpenRegionDetail } from './RegionPreviewContent'
 
 function PreviewQuery({
   regionCode,
   period,
   onOpenRegionDetail,
   integratedDemo,
+  previewRankLabel,
 }: {
   regionCode: string
   period: Period
   onOpenRegionDetail?: OpenRegionDetail
   integratedDemo: boolean
+  previewRankLabel?: string
 }) {
   const preview = useRegionPreview(regionCode, period)
   if (preview.isPending)
@@ -61,6 +63,7 @@ function PreviewQuery({
       period={period}
       onOpenRegionDetail={onOpenRegionDetail}
       showDetail={!integratedDemo || !USE_MOCK_REGION_DETAIL}
+      rankLabel={previewRankLabel}
     />
   )
 }
@@ -73,6 +76,7 @@ type DashboardRightPanelProps = {
   onBack: () => void
   onOpenRegionDetail?: OpenRegionDetail
   planRegions?: ReadonlyMap<string, PlanMapRegion>
+  previewRankLabel?: string
   integratedDemo?: boolean
 }
 
@@ -84,6 +88,7 @@ export function DashboardRightPanel({
   onBack,
   onOpenRegionDetail,
   planRegions,
+  previewRankLabel,
   integratedDemo = false,
 }: DashboardRightPanelProps) {
   const container = useRef<HTMLDivElement>(null)
@@ -157,6 +162,7 @@ export function DashboardRightPanel({
             period={period}
             onOpenRegionDetail={onOpenRegionDetail}
             integratedDemo={integratedDemo}
+            previewRankLabel={previewRankLabel}
           />
         ) : (
           <PriorityRanking

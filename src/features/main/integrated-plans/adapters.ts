@@ -34,16 +34,16 @@ function adaptRegion(value: unknown, included: boolean): PlanRegion {
 
 function adaptMapRegion(value: unknown): PlanMapRegion {
   const row = object(value)
-  const regionCode = text(row.regionCode)
+  const region = { regionCode: text(row.regionCode), categoryName: text(row.categoryName) }
   switch (row.category) {
     case 'SKIPPED':
-      return { regionCode, status: 'OVER_BUDGET', mode: null }
+      return { ...region, status: 'OVER_BUDGET', mode: null }
     case 'KEEP':
-      return { regionCode, status: 'KEEP', mode: null }
+      return { ...region, status: 'KEEP', mode: null }
     case 'NONE':
-      return { regionCode, status: 'INELIGIBLE', mode: null }
+      return { ...region, status: 'INELIGIBLE', mode: null }
     default:
-      return { regionCode, status: 'INCLUDED', mode: mode(row.category) }
+      return { ...region, status: 'INCLUDED', mode: mode(row.category) }
   }
 }
 
@@ -73,6 +73,8 @@ export function adaptIntegratedPlans(
         budget: number(plan.budget),
         totalCost: number(plan.totalCost),
         budgetLeft: number(plan.budgetLeft),
+        estimateDays: number(plan.days),
+        skippedCount: number(plan.skippedCount),
         includedRegionCount: number(plan.includedCount),
         includedSeniorPopulation: number(plan.pop65Total),
       },
@@ -94,5 +96,5 @@ export function adaptIntegratedPlans(
   )
     invalid()
 
-  return { plans, mapByPlan, estimateDays: rows.length ? number(rows[0].days) : undefined }
+  return { plans, mapByPlan }
 }

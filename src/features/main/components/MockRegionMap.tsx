@@ -57,6 +57,8 @@ export function MockRegionMap({
   const active = byCode.get(hoveredRegionCode ?? focusedRegionCode ?? selectedRegionCode ?? '')
   const planStyle = (regionCode: string) =>
     planRegions ? getPlanRegionStyle(planRegions.get(regionCode)) : undefined
+  const planLabel = (regionCode: string) =>
+    planRegions?.get(regionCode)?.categoryName ?? planStyle(regionCode)?.label
   const drag = useRef<{
     pointerId: number
     x: number
@@ -197,7 +199,7 @@ export function MockRegionMap({
             {visibleShapes.map((shape) => {
               const region = byCode.get(shape.regionCode)!
               const style = planStyle(region.regionCode)
-              const regionLabel = `${region.regionName} · ${region.gu} · ${describeScore(region.score)}${style ? ` · ${style.label}` : ''}`
+              const regionLabel = `${region.regionName} · ${region.gu} · ${describeScore(region.score)}${style ? ` · ${planLabel(region.regionCode)}` : ''}`
               const level = getVulnerabilityLevel(region.score)
               const selected = selectedRegionCode === region.regionCode
               return (
@@ -285,15 +287,25 @@ export function MockRegionMap({
                     shape.regionCode === hoveredRegionCode ||
                     shape.regionCode === focusedRegionCode,
                 )
-                .map((shape) => (
-                  <path
-                    key={shape.regionCode}
-                    d={boundaryPath(shape)}
-                    fillRule="evenodd"
-                    vectorEffect="non-scaling-stroke"
-                    className="fill-none stroke-primary-70 stroke-[3]"
-                  />
-                ))}
+                .map((shape) => {
+                  const path = boundaryPath(shape)
+                  return (
+                    <g key={shape.regionCode}>
+                      {planRegions && (
+                        <path
+                          d={path}
+                          vectorEffect="non-scaling-stroke"
+                          className="fill-none stroke-white stroke-[6]"
+                        />
+                      )}
+                      <path
+                        d={path}
+                        vectorEffect="non-scaling-stroke"
+                        className="fill-none stroke-primary-70 stroke-[3]"
+                      />
+                    </g>
+                  )
+                })}
             </g>
           </g>
         </svg>
@@ -312,7 +324,7 @@ export function MockRegionMap({
           <p>
             <strong className="text-gray-90">{active.regionName}</strong> · {active.gu} ·{' '}
             {describeScore(active.score)}
-            {planRegions && ` · ${planStyle(active.regionCode)?.label}`}
+            {planRegions && ` · ${planLabel(active.regionCode)}`}
             {selectedRegionCode === active.regionCode ? ' · 선택됨' : ''}
           </p>
         ) : (
@@ -333,7 +345,7 @@ export function MockRegionMap({
             return (
               <li key={key} className="flex items-center gap-1.5">
                 <span aria-hidden className={cx('size-3 rounded-sm', style.swatch)} />
-                {key === 'INELIGIBLE' ? '기타 미포함' : style.label}
+                {style.label}
               </li>
             )
           })}

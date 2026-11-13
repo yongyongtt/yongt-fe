@@ -3,7 +3,7 @@ import { useId, useState } from 'react'
 import { Card } from '@/shared/components/Card'
 import { cx } from '@/shared/utils/cx'
 import type { DashboardRegion } from '../types'
-import { planModes, planStyles, type Plan, type PlanRegion } from './data'
+import { getIncludedPlanRegions, planModes, planStyles, type Plan, type PlanRegion } from './data'
 import comparisonInfo from './comparison-info.svg'
 import selectedPlanCheck from './selected-plan-check.svg'
 import unitCostInfo from './unit-cost-info.svg'
@@ -55,7 +55,7 @@ function regionStatus(region?: PlanRegion) {
   if (region?.excludeReason === 'DRT_ALREADY_OPERATING') return '이미 운영 중'
   if (region?.status === 'OVER_BUDGET') return '예산 밖'
   if (region?.status === 'KEEP') return '현행 유지'
-  return '대상 제외'
+  return '기타 미포함'
 }
 
 type Props = {
@@ -90,6 +90,8 @@ export function IntegratedPlansSection({
   const regionByCode = new Map(regions.map((region) => [region.regionCode, region]))
   const { budget } = activePlan.summary
   const budgetLabel = `${budgetFormat.format(budget / 100_000_000)}억`
+  const days = activePlan.summary.estimateDays ?? estimateDays
+  const durationLabel = days === 61 ? '2개월' : days ? `${days}일` : '예상'
 
   return (
     <section className="min-w-0 space-y-6 px-0 lg:px-6" aria-labelledby="integrated-plans-title">
@@ -103,7 +105,7 @@ export function IntegratedPlansSection({
               통합 최적안
             </h2>
             <span className="rounded-md bg-primary-5 px-2.5 py-1 text-[13px] font-semibold text-primary-60">
-              2개월 예산 {budgetLabel} 원
+              {durationLabel} 예산 {budgetLabel} 원
             </span>
           </div>
           <p className="text-sm break-keep text-gray-60">
@@ -124,8 +126,8 @@ export function IntegratedPlansSection({
             >
               <p className="font-bold">단가 기준</p>
               <p className="break-keep text-gray-60">
-                수단별 공개 단가와 투입 규모를 반영한 2개월
-                {estimateDays ? `(${estimateDays}일)` : ''} 추정 비용입니다.
+                수단별 공개 단가와 투입 규모를 반영한 추정 비용입니다.
+                {days && ` 비용 산정 기간은 ${days}일입니다.`}
                 {isMock && ' 화면의 수치와 순위는 예시입니다.'}
               </p>
             </Popover.Content>
@@ -181,7 +183,7 @@ export function IntegratedPlansSection({
               </span>
               <span className="flex flex-col gap-1 break-keep">
                 <span className="text-sm leading-tight font-bold">
-                  {copy?.title ?? description}
+                  {isMock ? (copy?.title ?? description) : description}
                 </span>
                 {(plan.summary.sortBasis ?? copy?.criterion) && (
                   <span className="text-[13px] leading-tight text-gray-60">
@@ -203,7 +205,12 @@ export function IntegratedPlansSection({
       </div>
 
       <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <BudgetAllocation plan={activePlan} regionByCode={regionByCode} budgetLabel={budgetLabel} />
+        <BudgetAllocation
+          plan={activePlan}
+          regionByCode={regionByCode}
+          budgetLabel={budgetLabel}
+          durationLabel={durationLabel}
+        />
         <PlanComparison plans={plans} activePlan={activePlan} regionByCode={regionByCode} />
       </div>
     </section>
@@ -229,15 +236,15 @@ function BudgetAllocation({
   plan,
   regionByCode,
   budgetLabel,
+  durationLabel,
 }: {
   plan: Plan
   regionByCode: RegionIndex
   budgetLabel: string
+  durationLabel: string
 }) {
   const { planId, name, budget, totalCost, description } = plan.summary
-  const included = plan.regions
-    .filter((region) => region.inclusionOrder !== null && region.status === 'INCLUDED')
-    .toSorted((a, b) => (a.inclusionOrder ?? 0) - (b.inclusionOrder ?? 0))
+  const included = getIncludedPlanRegions(plan)
   const remaining = plan.summary.budgetLeft ?? Math.max(0, budget - totalCost)
   const percentage = (amount: number) => (budget > 0 ? (amount / budget) * 100 : 0)
   const usedModes = planModes.filter((mode) => included.some((region) => region.mode === mode))
@@ -329,7 +336,7 @@ function BudgetAllocation({
           <span aria-hidden className={cx('size-3 rounded-sm border border-gray-20', hatch)} />
           남은 예산
         </li>
-        <li className="text-gray-60">· 막대 길이 = 2개월 비용</li>
+        <li className="text-gray-60">· 막대 길이 = {durationLabel} 비용</li>
       </ul>
       <DeploymentTable
         key={planId}
@@ -337,6 +344,7 @@ function BudgetAllocation({
         included={included}
         regionByCode={regionByCode}
         remaining={remaining}
+        durationLabel={durationLabel}
       />
     </Card>
   )
@@ -347,11 +355,13 @@ function DeploymentTable({
   included,
   regionByCode,
   remaining,
+  durationLabel,
 }: {
   plan: Plan
   included: PlanRegion[]
   regionByCode: RegionIndex
   remaining: number
+  durationLabel: string
 }) {
   const additionalRowsId = useId()
   const [expanded, setExpanded] = useState(false)
@@ -389,7 +399,7 @@ function DeploymentTable({
                 투입
               </th>
               <th scope="col" className="px-4 py-2.5 text-center font-medium whitespace-nowrap">
-                비용(2개월)
+                비용({durationLabel})
               </th>
               <th scope="col" className="px-4 py-2.5 text-center font-medium whitespace-nowrap">
                 종합 취약도
@@ -503,7 +513,9 @@ function DeploymentTable({
           onClick={() => setExpanded((value) => !value)}
           className="inline-flex items-center gap-2 rounded-md border border-gray-20 bg-white px-3 py-2 text-sm font-medium text-gray-70 hover:bg-gray-5 focus-visible:outline-2 focus-visible:outline-primary-50"
         >
-          {expanded ? '건너뛴 지역 접기' : `건너뛴 지역 보기 (${additionalRegions.length}곳)`}
+          {expanded
+            ? '건너뛴 지역 접기'
+            : `건너뛴 지역 보기 (${plan.summary.skippedCount ?? additionalRegions.length}곳)`}
           <span
             aria-hidden
             className={cx('size-1.5 border-r border-b', expanded ? 'rotate-225' : 'rotate-45')}
@@ -526,14 +538,14 @@ function PlanComparison({
   const planRegions = plans.map(
     (plan) => new Map(plan.regions.map((region) => [region.regionCode, region])),
   )
-  const includedCodes = new Set(
+  const candidateCodes = new Set(
     plans.flatMap((plan) =>
       plan.regions
-        .filter((region) => region.status === 'INCLUDED')
+        .filter((region) => region.status === 'INCLUDED' || region.status === 'OVER_BUDGET')
         .map((region) => region.regionCode),
     ),
   )
-  const comparisonRegions = [...includedCodes]
+  const comparisonRegions = [...candidateCodes]
     .map((regionCode) => {
       const entry = planRegions
         .map((index) => index.get(regionCode))

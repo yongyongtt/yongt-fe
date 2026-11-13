@@ -13,11 +13,13 @@ export function RegionPreviewContent({
   period,
   onOpenRegionDetail,
   showDetail = true,
+  rankLabel,
 }: {
   preview: RegionPreview
   period: Period
   onOpenRegionDetail?: OpenRegionDetail
   showDetail?: boolean
+  rankLabel?: string
 }) {
   const [detailNotice, setDetailNotice] = useState(false)
   const recommendation = preview.recommendation
@@ -41,7 +43,7 @@ export function RegionPreviewContent({
             </h3>
             <span className="rounded border border-danger-60 px-2.5 py-1 text-[13px] font-bold text-danger-60">
               종합 {preview.header.score === null ? '점수 없음' : `${preview.header.score}점`} ·{' '}
-              {preview.header.rank}위
+              {rankLabel ?? `${preview.header.rank}위`}
             </span>
           </div>
           <p className="mt-1 text-[13px] leading-6 text-gray-50">

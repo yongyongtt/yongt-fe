@@ -6,6 +6,7 @@ type MockPlan = (typeof fixture.plans)[number]
 export type PlanMode = keyof MockPlan['summary']['modeCounts']
 export type PlanMapRegion = {
   regionCode: string
+  categoryName?: string
   status: 'INCLUDED' | 'OVER_BUDGET' | 'KEEP' | 'INELIGIBLE'
   mode: PlanMode | null
 }
@@ -25,6 +26,8 @@ export type Plan = {
   summary: Omit<MockPlan['summary'], 'modeCounts'> & {
     sortBasis?: string
     budgetLeft?: number
+    estimateDays?: number
+    skippedCount?: number
   }
   regions: PlanRegion[]
 }
@@ -32,6 +35,15 @@ export type IntegratedPlans = {
   plans: Plan[]
   mapByPlan: ReadonlyMap<number, PlanMapRegion[]>
   estimateDays?: number
+}
+
+export function getIncludedPlanRegions(plan: Plan) {
+  return plan.regions
+    .filter(
+      (region): region is PlanRegion & { inclusionOrder: number } =>
+        region.status === 'INCLUDED' && region.inclusionOrder !== null,
+    )
+    .toSorted((a, b) => a.inclusionOrder - b.inclusionOrder)
 }
 
 // TypeScript widens string literals imported from JSON.
@@ -77,7 +89,7 @@ export const planStyles = {
     text: 'fill-gray-90',
   },
   INELIGIBLE: {
-    label: '대상 제외',
+    label: '기타 미포함',
     fill: 'fill-white',
     badge: 'bg-gray-5 text-gray-70',
     swatch: 'border border-gray-50 bg-white',

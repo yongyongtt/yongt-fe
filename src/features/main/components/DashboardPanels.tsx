@@ -9,7 +9,12 @@ import { DashboardRightPanel } from './DashboardRightPanel'
 import { initialSelection, selectionReducer } from '../selection'
 import type { OpenRegionDetail } from './RegionPreviewContent'
 import { IntegratedPlansSection } from '../integrated-plans/IntegratedPlansSection'
-import { getIntegratedPlansMock, type Plan } from '../integrated-plans/data'
+import {
+  getIncludedPlanRegions,
+  getIntegratedPlansMock,
+  getPlanRegionStyle,
+  type Plan,
+} from '../integrated-plans/data'
 import { useDashboardMap, useIntegratedPlans } from '../hooks'
 import { ApiFailureState } from './ApiFailureState'
 
@@ -33,14 +38,33 @@ export function DashboardPanels({ period, onOpenRegionDetail }: DashboardPanelsP
     )
   const data = query.error ? undefined : query.data
   const selectedPlan = data?.plans.find(({ summary }) => summary.planId === selectedPlanId) ?? null
-  const activePlan = showPlanMap ? selectedPlan : null
+  const activePlan = showPlanMap ? (selectedPlan ?? data?.plans[0]) : null
   const activeMap = activePlan && data?.mapByPlan.get(activePlan.summary.planId)
   const planRegions = activeMap
     ? new Map(activeMap.map((region) => [region.regionCode, region]))
     : undefined
+  const mapRegions = map.error ? [] : (map.data?.regions ?? [])
+  const selectedDeployment = activePlan
+    ? getIncludedPlanRegions(activePlan).find(
+        ({ regionCode }) => regionCode === selection.regionCode,
+      )
+    : undefined
+  const selectedPlanRegion = selection.regionCode
+    ? planRegions?.get(selection.regionCode)
+    : undefined
+  const previewRankLabel = showPlanMap
+    ? selectedDeployment
+      ? `투입 ${selectedDeployment.inclusionOrder}순위`
+      : (selectedPlanRegion?.categoryName ??
+        (planRegions ? getPlanRegionStyle(selectedPlanRegion).label : '투입 순위 없음'))
+    : undefined
   const selectPlan = (plan: Plan) => {
     setSelectedPlanId(plan.summary.planId)
-    setShowPlanMap(true)
+  }
+  const switchMapMode = (nextShowPlanMap: boolean) => {
+    if (nextShowPlanMap === showPlanMap) return
+    setShowPlanMap(nextShowPlanMap)
+    dispatch({ type: 'reset' })
   }
 
   return (
@@ -52,13 +76,10 @@ export function DashboardPanels({ period, onOpenRegionDetail }: DashboardPanelsP
           onSelectRegion={(regionCode) => dispatch({ type: 'select', regionCode, focusMap: false })}
           focusRequest={selection.focusRequest}
           integratedDemo={demo !== null}
-          canShowPlan={Boolean(data?.plans.length)}
+          showingPlan={showPlanMap}
           planRegions={planRegions}
-          onShowVulnerability={() => setShowPlanMap(false)}
-          onShowPlan={() => {
-            const plan = selectedPlan ?? data?.plans[0]
-            if (plan) selectPlan(plan)
-          }}
+          onShowVulnerability={() => switchMapMode(false)}
+          onShowPlan={() => switchMapMode(true)}
         />
         <DashboardRightPanel
           period={period}
@@ -68,32 +89,34 @@ export function DashboardPanels({ period, onOpenRegionDetail }: DashboardPanelsP
           onBack={() => dispatch({ type: 'back' })}
           onOpenRegionDetail={onOpenRegionDetail}
           planRegions={planRegions}
+          previewRankLabel={previewRankLabel}
           integratedDemo={demo !== null}
         />
       </div>
-      {query.isPending ? (
-        <Card className="space-y-3 p-4 lg:p-7">
-          <h2 className="text-2xl font-bold">통합 최적안</h2>
-          <span className="sr-only" role="status">
-            통합 최적안을 불러오는 중입니다.
-          </span>
-          <Skeleton className="h-24 w-full" />
-        </Card>
-      ) : query.error && !unavailable ? (
-        <Card className="space-y-3 p-4 lg:p-7">
-          <h2 className="text-2xl font-bold">통합 최적안</h2>
-          <ApiFailureState error={query.error} onRetry={() => void query.refetch()} />
-        </Card>
-      ) : (
-        <IntegratedPlansSection
-          plans={data?.plans ?? []}
-          regions={map.error ? [] : (map.data?.regions ?? [])}
-          estimateDays={data?.estimateDays}
-          isMock={USE_MOCK}
-          selectedPlan={selectedPlan}
-          onSelect={selectPlan}
-        />
-      )}
+      {showPlanMap &&
+        (query.isPending ? (
+          <Card className="space-y-3 p-4 lg:p-7">
+            <h2 className="text-2xl font-bold">통합 최적안</h2>
+            <span className="sr-only" role="status">
+              통합 최적안을 불러오는 중입니다.
+            </span>
+            <Skeleton className="h-24 w-full" />
+          </Card>
+        ) : query.error && !unavailable ? (
+          <Card className="space-y-3 p-4 lg:p-7">
+            <h2 className="text-2xl font-bold">통합 최적안</h2>
+            <ApiFailureState error={query.error} onRetry={() => void query.refetch()} />
+          </Card>
+        ) : (
+          <IntegratedPlansSection
+            plans={data?.plans ?? []}
+            regions={mapRegions}
+            estimateDays={data?.estimateDays}
+            isMock={USE_MOCK}
+            selectedPlan={selectedPlan}
+            onSelect={selectPlan}
+          />
+        ))}
     </div>
   )
 }

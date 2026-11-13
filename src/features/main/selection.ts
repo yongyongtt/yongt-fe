@@ -5,7 +5,7 @@ export type DashboardSelection = {
   focusRequest: MapFocusRequest | null
 }
 export type SelectionAction =
-  { type: 'select'; regionCode: string; focusMap: boolean } | { type: 'back' }
+  { type: 'select'; regionCode: string; focusMap: boolean } | { type: 'back' } | { type: 'reset' }
 
 export const initialSelection: DashboardSelection = {
   regionCode: null,
@@ -17,6 +17,7 @@ export function selectionReducer(
   state: DashboardSelection,
   action: SelectionAction,
 ): DashboardSelection {
+  if (action.type === 'reset') return initialSelection
   if (action.type === 'back') return { ...state, mode: 'ranking' }
   return {
     regionCode: action.regionCode,
