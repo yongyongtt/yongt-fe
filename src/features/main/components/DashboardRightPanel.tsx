@@ -105,11 +105,16 @@ export function DashboardRightPanel({
   }, [showingPreview, selectedRegionCode])
 
   return (
-    <div ref={container} className="min-w-0 animate-fade-up self-start [animation-delay:380ms]">
+    <div
+      ref={container}
+      className="min-w-0 animate-fade-up self-start [animation-delay:380ms] xl:flex xl:self-stretch"
+    >
       <Card
         className={cx(
           'flex w-full flex-col overflow-hidden',
-          showingPreview ? 'h-[630px]' : 'h-[650px] xl:h-[816px]',
+          showingPreview
+            ? 'h-[630px] xl:h-auto xl:contain-size'
+            : 'h-[650px] lg:h-auto xl:min-h-[816px]',
         )}
       >
         <div className="shrink-0 border-b border-gray-10 px-6 pt-6 pb-5">
@@ -126,7 +131,7 @@ export function DashboardRightPanel({
             </span>
           </div>
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm leading-6 text-gray-50">
+            <p className="text-sm leading-6 text-gray-60">
               {showingPreview ? '선택 지역 미리보기' : '종합 취약도가 높은 순서입니다.'}
             </p>
             {showingPreview && (

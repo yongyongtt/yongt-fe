@@ -27,7 +27,10 @@ export function PriorityRanking({
 
   return (
     <>
-      <div className="min-h-0 flex-1 overflow-y-auto" aria-label="우선 해결 지역 순위">
+      <div
+        className="min-h-0 flex-1 overflow-y-auto lg:flex-auto lg:overflow-visible"
+        aria-label="우선 해결 지역 순위"
+      >
         {dashboard.isPending ? (
           <div role="status" className="space-y-4 p-6">
             <span className="sr-only">지역 순위를 불러오는 중입니다.</span>
@@ -72,21 +75,28 @@ export function PriorityRanking({
                     >
                       {region.rank}
                     </span>
-                    <span className="flex min-w-0 flex-1 items-center gap-x-1.5">
-                      <span className="flex min-w-0 flex-wrap items-baseline gap-x-1.5">
+                    <span className="flex min-w-0 flex-1 items-center gap-x-0.5">
+                      <span
+                        className={cx(
+                          'flex min-w-0 flex-1 flex-wrap items-baseline gap-x-1.5',
+                          plan && 'max-w-24',
+                        )}
+                      >
                         <span className="font-bold break-keep">{region.regionName}</span>
                         <span className="text-[13px] whitespace-nowrap text-gray-50">
                           {region.gu}
                         </span>
                       </span>
                       {plan && (
-                        <span
-                          className={cx(
-                            'shrink-0 rounded px-1.5 py-0.5 text-xs font-semibold whitespace-nowrap',
-                            plan.badge,
-                          )}
-                        >
-                          {plan.label}
+                        <span className="grid w-16 shrink-0 place-items-center">
+                          <span
+                            className={cx(
+                              'rounded px-1.5 py-0.5 text-xs font-semibold whitespace-nowrap',
+                              plan.badge,
+                            )}
+                          >
+                            {plan.label}
+                          </span>
                         </span>
                       )}
                     </span>
@@ -94,7 +104,7 @@ export function PriorityRanking({
                       aria-hidden
                       className={cx(
                         'block h-1.5 max-w-[110px] shrink-0 overflow-hidden rounded-full bg-gray-10',
-                        plan ? 'w-[18%]' : 'w-[30%] min-w-9',
+                        plan ? 'w-[14%] sm:w-[24%]' : 'w-[30%] min-w-9',
                       )}
                     >
                       <span
@@ -126,7 +136,7 @@ export function PriorityRanking({
             시연용 목업 중 1~10위 지역만 표시합니다. 현재 제공되는 지역은 {regions.length}개입니다.
           </p>
         )}
-        <div className="flex items-start gap-2.5 rounded-lg bg-gray-5 px-4 py-3.5 text-sm leading-[21px] text-gray-50">
+        <div className="flex items-start gap-2.5 rounded-lg bg-gray-5 px-4 py-3.5 text-sm leading-[21px] text-gray-60">
           <img src={selectRegionIcon} alt="" aria-hidden className="mt-0.5 shrink-0" />
           <p>지도나 위 목록에서 지역을 선택하면 이 자리에 요약 정보와 AI 미리보기가 표시됩니다.</p>
         </div>

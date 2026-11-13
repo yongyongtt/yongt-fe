@@ -30,9 +30,9 @@ function transportModeStyle(label: string, textColor: string, badgeBackground: s
 }
 
 export const planStyles = {
-  ROUTE_BUS: transportModeStyle('노선버스', 'text-primary-70', 'bg-primary-5'),
-  DRT: transportModeStyle('똑버스', 'text-amber-800', 'bg-amber-50'),
-  HAPPY_TAXI: transportModeStyle('행복택시', 'text-teal-800', 'bg-teal-50'),
+  ROUTE_BUS: transportModeStyle('노선버스', 'text-green-700', 'bg-green-50'),
+  DRT: transportModeStyle('똑버스', 'text-primary-70', 'bg-primary-5'),
+  HAPPY_TAXI: transportModeStyle('행복택시', 'text-orange-700', 'bg-orange-50'),
   KEEP: {
     label: '현행 유지',
     fill: 'fill-gray-40',

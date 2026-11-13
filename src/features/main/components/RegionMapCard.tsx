@@ -123,7 +123,7 @@ export function RegionMapCard({
               setPanMode(false)
             }}
           />
-          <MethodologyPopover isSchematic={!useRealBoundaries} />
+          {!showingPlan && <MethodologyPopover isSchematic={!useRealBoundaries} />}
         </div>
         {map.isPending || (useRealBoundaries && boundaries.isPending) ? (
           <div role="status">
