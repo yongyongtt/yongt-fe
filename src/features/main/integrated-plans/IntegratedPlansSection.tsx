@@ -62,6 +62,7 @@ type Props = {
   plans: Plan[]
   regions: DashboardRegion[]
   estimateDays?: number
+  isMock: boolean
   selectedPlan: Plan | null
   onSelect: (plan: Plan) => void
 }
@@ -70,6 +71,7 @@ export function IntegratedPlansSection({
   plans,
   regions,
   estimateDays,
+  isMock,
   selectedPlan,
   onSelect,
 }: Props) {
@@ -123,8 +125,8 @@ export function IntegratedPlansSection({
               <p className="font-bold">단가 기준</p>
               <p className="break-keep text-gray-60">
                 수단별 공개 단가와 투입 규모를 반영한 2개월
-                {estimateDays ? `(${estimateDays}일)` : ''} 추정 비용입니다. 화면의 수치와 순위는
-                예시입니다.
+                {estimateDays ? `(${estimateDays}일)` : ''} 추정 비용입니다.
+                {isMock && ' 화면의 수치와 순위는 예시입니다.'}
               </p>
             </Popover.Content>
           </Popover.Portal>
@@ -181,8 +183,10 @@ export function IntegratedPlansSection({
                 <span className="text-sm leading-tight font-bold">
                   {copy?.title ?? description}
                 </span>
-                {copy && (
-                  <span className="text-[13px] leading-tight text-gray-60">{copy.criterion}</span>
+                {(plan.summary.sortBasis ?? copy?.criterion) && (
+                  <span className="text-[13px] leading-tight text-gray-60">
+                    {plan.summary.sortBasis ?? copy?.criterion}
+                  </span>
                 )}
               </span>
               <span className="mt-auto grid w-full grid-cols-3 gap-1 border-t border-gray-10 pt-[19px] text-center @min-[280px]:gap-3">
@@ -234,7 +238,7 @@ function BudgetAllocation({
   const included = plan.regions
     .filter((region) => region.inclusionOrder !== null && region.status === 'INCLUDED')
     .toSorted((a, b) => (a.inclusionOrder ?? 0) - (b.inclusionOrder ?? 0))
-  const remaining = Math.max(0, budget - totalCost)
+  const remaining = plan.summary.budgetLeft ?? Math.max(0, budget - totalCost)
   const percentage = (amount: number) => (budget > 0 ? (amount / budget) * 100 : 0)
   const usedModes = planModes.filter((mode) => included.some((region) => region.mode === mode))
   return (
@@ -275,7 +279,10 @@ function BudgetAllocation({
           <div className="flex h-16 min-w-[680px] overflow-hidden">
             {included.map((region) => {
               const mode = transportMode(region)
-              const name = regionByCode.get(region.regionCode)?.regionName
+              const name =
+                region.regionName ??
+                regionByCode.get(region.regionCode)?.regionName ??
+                region.regionCode
               const cost = formatCost(region.estimatedCost)
               const label = `${region.inclusionOrder}순위 : ${name}`
               return (
@@ -402,7 +409,8 @@ function DeploymentTable({
               >
                 {rows.map((region) => {
                   const dashboard = regionByCode.get(region.regionCode)
-                  const score = dashboard?.score ?? null
+                  const score =
+                    region.score === undefined ? (dashboard?.score ?? null) : region.score
                   const mode = transportMode(region)
                   const isIncluded = region.status === 'INCLUDED'
                   const status = isIncluded ? '포함' : regionStatus(region)
@@ -426,13 +434,15 @@ function DeploymentTable({
                       <th scope="row" className="px-4 py-3">
                         <span className="flex flex-wrap items-baseline gap-x-1.5">
                           <span className="font-bold">
-                            {dashboard?.regionName ?? region.regionCode}
+                            {region.regionName ?? dashboard?.regionName ?? region.regionCode}
                           </span>
-                          <span className="text-xs font-normal text-gray-60">{dashboard?.gu}</span>
+                          <span className="text-xs font-normal text-gray-60">
+                            {region.gu ?? dashboard?.gu}
+                          </span>
                         </span>
                         {region.status === 'OVER_BUDGET' && (
                           <span className="block text-xs font-normal text-gray-60">
-                            남은 예산 {formatCost(remaining)} &lt; 필요{' '}
+                            남은 예산 {formatCost(region.budgetLeftAtSkip ?? remaining)} &lt; 필요{' '}
                             {formatCost(region.estimatedCost)}
                           </span>
                         )}
@@ -445,8 +455,10 @@ function DeploymentTable({
                               planStyles[mode].badge,
                             )}
                           >
-                            {planStyles[mode].label}
-                            {region.vehicleCount !== null && ` ${region.vehicleCount}대`}
+                            {region.action || planStyles[mode].label}
+                            {!region.action &&
+                              region.vehicleCount != null &&
+                              ` ${region.vehicleCount}대`}
                           </span>
                         ) : (
                           '—'
@@ -521,8 +533,18 @@ function PlanComparison({
         .map((region) => region.regionCode),
     ),
   )
-  const comparisonRegions = [...regionByCode.values()]
-    .filter((region) => includedCodes.has(region.regionCode))
+  const comparisonRegions = [...includedCodes]
+    .map((regionCode) => {
+      const entry = planRegions
+        .map((index) => index.get(regionCode))
+        .find((region) => region?.regionName)
+      const dashboard = regionByCode.get(regionCode)
+      return {
+        regionCode,
+        regionName: entry?.regionName ?? dashboard?.regionName ?? regionCode,
+        score: entry?.score === undefined ? (dashboard?.score ?? null) : entry.score,
+      }
+    })
     .toSorted((a, b) => (b.score ?? -1) - (a.score ?? -1))
   const activeColumn = (plan: Plan) =>
     plan === activePlan ? 'bg-primary-5/55 text-primary-60' : ''

@@ -18,7 +18,7 @@ import { MockRegionMap } from './MockRegionMap'
 import { RegionSearch } from './RegionSearch'
 import { MethodologyPopover } from './MethodologyPopover'
 import { cx } from '@/shared/utils/cx'
-import type { PlanRegion } from '../integrated-plans/data'
+import type { PlanMapRegion } from '../integrated-plans/data'
 
 type RegionMapCardProps = {
   period: Period
@@ -26,7 +26,8 @@ type RegionMapCardProps = {
   onSelectRegion: (regionCode: string) => void
   focusRequest?: MapFocusRequest | null
   integratedDemo?: boolean
-  planRegions?: ReadonlyMap<string, PlanRegion>
+  planRegions?: ReadonlyMap<string, PlanMapRegion>
+  canShowPlan?: boolean
   onShowVulnerability?: () => void
   onShowPlan?: () => void
 }
@@ -38,6 +39,7 @@ export function RegionMapCard({
   focusRequest,
   integratedDemo = false,
   planRegions,
+  canShowPlan = false,
   onShowVulnerability,
   onShowPlan,
 }: RegionMapCardProps) {
@@ -81,7 +83,7 @@ export function RegionMapCard({
     <Card className="flex min-h-[480px] min-w-0 animate-fade-up flex-col [animation-delay:320ms] xl:min-h-[816px]">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-10 px-7 py-5">
         <h2 className="text-lg font-bold">{showingPlan ? '통합 최적안 지도' : '종합 취약도'}</h2>
-        {USE_MOCK && onShowPlan && (
+        {onShowPlan && (
           <div
             role="group"
             aria-label="지도 모드"
@@ -99,7 +101,7 @@ export function RegionMapCard({
               type="button"
               className={cx(modeButton, 'enabled:hover:text-primary-70')}
               aria-pressed={showingPlan}
-              disabled={!integratedDemo}
+              disabled={!canShowPlan}
               onClick={onShowPlan}
             >
               통합 최적안

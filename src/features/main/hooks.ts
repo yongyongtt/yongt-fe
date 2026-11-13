@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import type { Period } from '@/shared/hooks/usePeriodParams'
-import { fetchDashboard, fetchDashboardMap, fetchRegionPreview } from './api'
+import { fetchDashboard, fetchDashboardMap, fetchIntegratedPlans, fetchRegionPreview } from './api'
 import { fetchBoundaries } from './map/boundaries'
 import { USE_MOCK } from '@/shared/api/mock'
 
@@ -32,6 +32,13 @@ export function useDashboardMap(period: Period) {
   return useQuery({
     queryKey: mainKeys.map(period),
     queryFn: () => fetchDashboardMap(period),
+  })
+}
+
+export function useIntegratedPlans(period: Period) {
+  return useQuery({
+    queryKey: [...mainKeys.all, 'integrated-plans', period],
+    queryFn: () => fetchIntegratedPlans(period),
   })
 }
 

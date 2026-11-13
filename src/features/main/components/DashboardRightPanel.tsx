@@ -12,7 +12,7 @@ import { useRegionPreview } from '../hooks'
 import type { DashboardSelection } from '../selection'
 import { PriorityRanking } from './PriorityRanking'
 import { RegionPreviewContent, type OpenRegionDetail } from './RegionPreviewContent'
-import type { PlanRegion } from '../integrated-plans/data'
+import type { PlanMapRegion } from '../integrated-plans/data'
 
 function PreviewQuery({
   regionCode,
@@ -72,7 +72,7 @@ type DashboardRightPanelProps = {
   onSelectRegion: (code: string) => void
   onBack: () => void
   onOpenRegionDetail?: OpenRegionDetail
-  planRegions?: ReadonlyMap<string, PlanRegion>
+  planRegions?: ReadonlyMap<string, PlanMapRegion>
   integratedDemo?: boolean
 }
 

@@ -1,4 +1,7 @@
 import { useReducer, useState } from 'react'
+import { ApiError } from '@/shared/api/client'
+import { Card } from '@/shared/components/Card'
+import { Skeleton } from '@/shared/components/Skeleton'
 import { USE_MOCK } from '@/shared/api/mock'
 import type { Period } from '@/shared/hooks/usePeriodParams'
 import { RegionMapCard } from './RegionMapCard'
@@ -7,6 +10,8 @@ import { initialSelection, selectionReducer } from '../selection'
 import type { OpenRegionDetail } from './RegionPreviewContent'
 import { IntegratedPlansSection } from '../integrated-plans/IntegratedPlansSection'
 import { getIntegratedPlansMock, type Plan } from '../integrated-plans/data'
+import { useDashboardMap, useIntegratedPlans } from '../hooks'
+import { ApiFailureState } from './ApiFailureState'
 
 type DashboardPanelsProps = {
   period: Period
@@ -16,15 +21,25 @@ type DashboardPanelsProps = {
 /** 지도는 우측 목록/미리보기 전환과 관계없이 같은 위치에서 유지한다. */
 export function DashboardPanels({ period, onOpenRegionDetail }: DashboardPanelsProps) {
   const [selection, dispatch] = useReducer(selectionReducer, initialSelection)
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null)
+  const [selectedPlanId, setSelectedPlanId] = useState<number | null>(null)
   const [showPlanMap, setShowPlanMap] = useState(false)
   const demo = getIntegratedPlansMock(period)
+  const map = useDashboardMap(period)
+  const query = useIntegratedPlans(period)
+  const unavailable =
+    query.error instanceof ApiError &&
+    ['PERIOD_NOT_FOUND', 'SUITABILITY_NOT_READY', 'PLAN_NOT_FOUND', 'EMPTY_DATA'].includes(
+      query.error.code,
+    )
+  const data = query.error ? undefined : query.data
+  const selectedPlan = data?.plans.find(({ summary }) => summary.planId === selectedPlanId) ?? null
   const activePlan = showPlanMap ? selectedPlan : null
-  const planRegions = activePlan
-    ? new Map(activePlan.regions.map((region) => [region.regionCode, region]))
+  const activeMap = activePlan && data?.mapByPlan.get(activePlan.summary.planId)
+  const planRegions = activeMap
+    ? new Map(activeMap.map((region) => [region.regionCode, region]))
     : undefined
   const selectPlan = (plan: Plan) => {
-    setSelectedPlan(plan)
+    setSelectedPlanId(plan.summary.planId)
     setShowPlanMap(true)
   }
 
@@ -37,10 +52,11 @@ export function DashboardPanels({ period, onOpenRegionDetail }: DashboardPanelsP
           onSelectRegion={(regionCode) => dispatch({ type: 'select', regionCode, focusMap: false })}
           focusRequest={selection.focusRequest}
           integratedDemo={demo !== null}
+          canShowPlan={Boolean(data?.plans.length)}
           planRegions={planRegions}
           onShowVulnerability={() => setShowPlanMap(false)}
           onShowPlan={() => {
-            const plan = selectedPlan ?? demo?.plans[0]
+            const plan = selectedPlan ?? data?.plans[0]
             if (plan) selectPlan(plan)
           }}
         />
@@ -55,11 +71,25 @@ export function DashboardPanels({ period, onOpenRegionDetail }: DashboardPanelsP
           integratedDemo={demo !== null}
         />
       </div>
-      {USE_MOCK && (
+      {query.isPending ? (
+        <Card className="space-y-3 p-4 lg:p-7">
+          <h2 className="text-2xl font-bold">통합 최적안</h2>
+          <span className="sr-only" role="status">
+            통합 최적안을 불러오는 중입니다.
+          </span>
+          <Skeleton className="h-24 w-full" />
+        </Card>
+      ) : query.error && !unavailable ? (
+        <Card className="space-y-3 p-4 lg:p-7">
+          <h2 className="text-2xl font-bold">통합 최적안</h2>
+          <ApiFailureState error={query.error} onRetry={() => void query.refetch()} />
+        </Card>
+      ) : (
         <IntegratedPlansSection
-          plans={demo?.plans ?? []}
-          regions={demo?.dashboard.regions ?? []}
-          estimateDays={demo?.estimateDays}
+          plans={data?.plans ?? []}
+          regions={map.error ? [] : (map.data?.regions ?? [])}
+          estimateDays={data?.estimateDays}
+          isMock={USE_MOCK}
           selectedPlan={selectedPlan}
           onSelect={selectPlan}
         />

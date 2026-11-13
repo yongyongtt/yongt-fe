@@ -14,7 +14,7 @@ import {
   getPlanRegionStyle,
   planLegendKeys,
   planStyles,
-  type PlanRegion,
+  type PlanMapRegion,
 } from '../integrated-plans/data'
 
 type MockRegionMapProps = {
@@ -28,7 +28,7 @@ type MockRegionMapProps = {
   onTogglePan: () => void
   onFocusRegion?: (regionCode: string) => void
   isRealMap?: boolean
-  planRegions?: ReadonlyMap<string, PlanRegion>
+  planRegions?: ReadonlyMap<string, PlanMapRegion>
 }
 
 export function MockRegionMap({

@@ -7,13 +7,13 @@ import { cx } from '@/shared/utils/cx'
 import { useDashboard } from '../hooks'
 import { getPriorityRegions } from '../preview'
 import type { Period } from '@/shared/hooks/usePeriodParams'
-import { getPlanRegionStyle, type PlanRegion } from '../integrated-plans/data'
+import { getPlanRegionStyle, type PlanMapRegion } from '../integrated-plans/data'
 
 type PriorityRankingProps = {
   period: Period
   selectedRegionCode: string | null
   onSelectRegion: (code: string) => void
-  planRegions?: ReadonlyMap<string, PlanRegion>
+  planRegions?: ReadonlyMap<string, PlanMapRegion>
 }
 
 export function PriorityRanking({
