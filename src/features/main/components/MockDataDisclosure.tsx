@@ -1,7 +1,7 @@
 import noticeIcon from '@/assets/main/notice.svg'
 import { MAIN_MOCK_NOTICE } from '../mocks'
 
-export function MockDataDisclosure() {
+export function MockDataDisclosure({ integratedDemo = false }: { integratedDemo?: boolean }) {
   return (
     <aside
       aria-label="시연용 데이터 안내"
@@ -9,10 +9,16 @@ export function MockDataDisclosure() {
     >
       <img src={noticeIcon} alt="" aria-hidden className="mt-0.5 shrink-0" />
       <div>
-        <p>{MAIN_MOCK_NOTICE}</p>
-        <p className="mt-1">
-          KPI는 목업 5개 지역 기준이며, 취약지역 수는 시연용 유형 분류로 집계합니다.
-        </p>
+        {integratedDemo ? (
+          <p>실제 행정경계 위에 시연용 점수·순위·통합 최적안 데이터를 표시합니다.</p>
+        ) : (
+          <>
+            <p>{MAIN_MOCK_NOTICE}</p>
+            <p className="mt-1">
+              KPI는 목업 5개 지역 기준이며, 취약지역 수는 시연용 유형 분류로 집계합니다.
+            </p>
+          </>
+        )}
       </div>
     </aside>
   )

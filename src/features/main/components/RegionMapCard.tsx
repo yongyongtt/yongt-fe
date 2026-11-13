@@ -17,12 +17,18 @@ import {
 import { MockRegionMap } from './MockRegionMap'
 import { RegionSearch } from './RegionSearch'
 import { MethodologyPopover } from './MethodologyPopover'
+import { cx } from '@/shared/utils/cx'
+import type { PlanRegion } from '../integrated-plans/data'
 
 type RegionMapCardProps = {
   period: Period
   selectedRegionCode: string | null
   onSelectRegion: (regionCode: string) => void
   focusRequest?: MapFocusRequest | null
+  integratedDemo?: boolean
+  planRegions?: ReadonlyMap<string, PlanRegion>
+  onShowVulnerability?: () => void
+  onShowPlan?: () => void
 }
 
 export function RegionMapCard({
@@ -30,9 +36,14 @@ export function RegionMapCard({
   selectedRegionCode,
   onSelectRegion,
   focusRequest,
+  integratedDemo = false,
+  planRegions,
+  onShowVulnerability,
+  onShowPlan,
 }: RegionMapCardProps) {
-  const boundaries = useMapBoundaries()
-  const shapes = USE_MOCK ? demoRegionShapes : (boundaries.data ?? [])
+  const useRealBoundaries = !USE_MOCK || integratedDemo
+  const boundaries = useMapBoundaries(useRealBoundaries)
+  const shapes = useRealBoundaries ? (boundaries.data ?? []) : demoRegionShapes
   type Camera = { viewport: MapViewport; panMode: boolean; focusRequest: MapFocusRequest | null }
   const [camera, setCamera] = useState<Camera>({
     viewport: { ...INITIAL_VIEWPORT },
@@ -62,21 +73,48 @@ export function RegionMapCard({
     shapes.some((shape) => shape.regionCode === region.regionCode),
   )
   const selected = mappedRegions.find((region) => region.regionCode === selectedRegionCode)
+  const showingPlan = planRegions !== undefined
+  const modeButton =
+    'min-h-9 rounded-md border border-transparent px-3 py-1 text-sm break-keep focus-visible:outline-2 focus-visible:outline-primary-50 aria-pressed:border-primary-60 aria-pressed:bg-primary-5 aria-pressed:font-bold aria-pressed:text-primary-70 disabled:opacity-55'
 
   return (
     <Card className="flex min-h-[480px] min-w-0 animate-fade-up flex-col [animation-delay:320ms] xl:min-h-[816px]">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-10 px-7 py-5">
-        <h2 className="text-lg font-bold">종합 취약도</h2>
-        <span className="rounded bg-gray-5 px-2 py-1 text-xs font-medium text-gray-60">
-          {USE_MOCK ? '시연용 가상 지도' : '용인시 행정동 지도'}
-        </span>
+        <h2 className="text-lg font-bold">{showingPlan ? '통합 최적안 지도' : '종합 취약도'}</h2>
+        {USE_MOCK && onShowPlan && (
+          <div
+            role="group"
+            aria-label="지도 모드"
+            className="ml-auto flex rounded-lg border border-gray-10 bg-gray-5 p-0.5 text-gray-70"
+          >
+            <button
+              type="button"
+              className={modeButton}
+              aria-pressed={!showingPlan}
+              onClick={onShowVulnerability}
+            >
+              종합 취약도
+            </button>
+            <button
+              type="button"
+              className={cx(modeButton, 'enabled:hover:text-primary-70')}
+              aria-pressed={showingPlan}
+              disabled={!integratedDemo}
+              onClick={onShowPlan}
+            >
+              통합 최적안
+            </button>
+          </div>
+        )}
       </div>
       <div className="flex flex-1 flex-col gap-4 p-4 sm:p-7">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <RegionSearch
             key={`${period.year}-${period.month}`}
             regions={mappedRegions}
-            disabled={map.isPending || Boolean(map.error) || (!USE_MOCK && boundaries.isPending)}
+            disabled={
+              map.isPending || Boolean(map.error) || (useRealBoundaries && boundaries.isPending)
+            }
             onSelectRegion={(code) => {
               const shape = shapes.find((item) => item.regionCode === code)
               if (!shape) return
@@ -85,16 +123,16 @@ export function RegionMapCard({
               setPanMode(false)
             }}
           />
-          <MethodologyPopover />
+          {!showingPlan && <MethodologyPopover isSchematic={!useRealBoundaries} />}
         </div>
-        {map.isPending || (!USE_MOCK && boundaries.isPending) ? (
+        {map.isPending || (useRealBoundaries && boundaries.isPending) ? (
           <div role="status">
             <span className="sr-only">지도 데이터를 불러오는 중입니다.</span>
             <Skeleton className="h-[360px] w-full" />
           </div>
         ) : map.error ? (
           <ApiFailureState error={map.error} onRetry={() => void map.refetch()} />
-        ) : !USE_MOCK && boundaries.error ? (
+        ) : useRealBoundaries && boundaries.error ? (
           <ApiFailureState error={boundaries.error} onRetry={() => void boundaries.refetch()} />
         ) : mappedRegions.length === 0 ? (
           <EmptyState
@@ -106,7 +144,8 @@ export function RegionMapCard({
             <MockRegionMap
               regions={regions}
               shapes={shapes}
-              isRealMap={!USE_MOCK}
+              isRealMap={useRealBoundaries}
+              planRegions={planRegions}
               selectedRegionCode={selected?.regionCode ?? null}
               onSelectRegion={onSelectRegion}
               viewport={viewport}
@@ -126,8 +165,9 @@ export function RegionMapCard({
           </>
         )}
         <p className="text-xs leading-5 text-gray-50">
-          {USE_MOCK && '실제 위치·면적과 무관한 도식입니다. '}손 도구를 켜면 드래그·방향키로
-          이동합니다. 지도에 초점을 둔 상태에서 키보드의 Home 키를 누르면 전체 보기로 돌아갑니다.
+          {!useRealBoundaries && '실제 위치·면적과 무관한 도식입니다. '}손 도구를 켜면
+          드래그·방향키로 이동합니다. 지도에 초점을 둔 상태에서 키보드의 Home 키를 누르면 전체
+          보기로 돌아갑니다.
         </p>
         <p role="status" aria-live="polite" className="sr-only">
           {selected

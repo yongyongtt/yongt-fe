@@ -12,12 +12,12 @@ export const mainKeys = {
     [...mainKeys.all, 'preview', regionCode, period] as const,
 }
 
-export function useMapBoundaries() {
+export function useMapBoundaries(enabled = !USE_MOCK) {
   return useQuery({
     queryKey: [...mainKeys.all, 'boundaries'],
     queryFn: fetchBoundaries,
     staleTime: Infinity,
-    enabled: !USE_MOCK,
+    enabled,
   })
 }
 

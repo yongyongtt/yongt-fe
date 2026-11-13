@@ -1,5 +1,8 @@
 import { useEffect, useRef } from 'react'
 import { Card } from '@/shared/components/Card'
+import { EmptyState } from '@/shared/components/EmptyState'
+import { ApiError } from '@/shared/api/client'
+import { USE_MOCK_REGION_DETAIL } from '@/shared/api/mock'
 import { ApiFailureState } from '@/features/main/components/ApiFailureState'
 import { ChevronLeftIcon } from '@/shared/components/icons'
 import { Skeleton } from '@/shared/components/Skeleton'
@@ -9,15 +12,18 @@ import { useRegionPreview } from '../hooks'
 import type { DashboardSelection } from '../selection'
 import { PriorityRanking } from './PriorityRanking'
 import { RegionPreviewContent, type OpenRegionDetail } from './RegionPreviewContent'
+import type { PlanRegion } from '../integrated-plans/data'
 
 function PreviewQuery({
   regionCode,
   period,
   onOpenRegionDetail,
+  integratedDemo,
 }: {
   regionCode: string
   period: Period
   onOpenRegionDetail?: OpenRegionDetail
+  integratedDemo: boolean
 }) {
   const preview = useRegionPreview(regionCode, period)
   if (preview.isPending)
@@ -27,6 +33,19 @@ function PreviewQuery({
         <Skeleton className="h-12 w-3/4" />
         <Skeleton className="h-24 w-full" />
         <Skeleton className="h-32 w-full" />
+      </div>
+    )
+  if (
+    integratedDemo &&
+    preview.error instanceof ApiError &&
+    preview.error.code === 'REGION_NOT_FOUND'
+  )
+    return (
+      <div className="p-4">
+        <EmptyState
+          title="미리보기 데이터가 없습니다."
+          description="이 지역의 진단은 시연용 데이터에 포함되지 않습니다."
+        />
       </div>
     )
   if (preview.error)
@@ -41,6 +60,7 @@ function PreviewQuery({
       preview={preview.data}
       period={period}
       onOpenRegionDetail={onOpenRegionDetail}
+      showDetail={!integratedDemo || !USE_MOCK_REGION_DETAIL}
     />
   )
 }
@@ -52,6 +72,8 @@ type DashboardRightPanelProps = {
   onSelectRegion: (code: string) => void
   onBack: () => void
   onOpenRegionDetail?: OpenRegionDetail
+  planRegions?: ReadonlyMap<string, PlanRegion>
+  integratedDemo?: boolean
 }
 
 export function DashboardRightPanel({
@@ -61,6 +83,8 @@ export function DashboardRightPanel({
   onSelectRegion,
   onBack,
   onOpenRegionDetail,
+  planRegions,
+  integratedDemo = false,
 }: DashboardRightPanelProps) {
   const container = useRef<HTMLDivElement>(null)
   const backButton = useRef<HTMLButtonElement>(null)
@@ -81,11 +105,16 @@ export function DashboardRightPanel({
   }, [showingPreview, selectedRegionCode])
 
   return (
-    <div ref={container} className="min-w-0 animate-fade-up self-start [animation-delay:380ms]">
+    <div
+      ref={container}
+      className="min-w-0 animate-fade-up self-start [animation-delay:380ms] xl:flex xl:self-stretch"
+    >
       <Card
         className={cx(
           'flex w-full flex-col overflow-hidden',
-          showingPreview ? 'h-[630px]' : 'h-[650px] xl:h-[816px]',
+          showingPreview
+            ? 'h-[630px] xl:h-auto xl:contain-size'
+            : 'h-[650px] lg:h-auto xl:min-h-[816px]',
         )}
       >
         <div className="shrink-0 border-b border-gray-10 px-6 pt-6 pb-5">
@@ -102,7 +131,7 @@ export function DashboardRightPanel({
             </span>
           </div>
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm leading-6 text-gray-50">
+            <p className="text-sm leading-6 text-gray-60">
               {showingPreview ? '선택 지역 미리보기' : '종합 취약도가 높은 순서입니다.'}
             </p>
             {showingPreview && (
@@ -127,11 +156,13 @@ export function DashboardRightPanel({
             regionCode={selectedRegionCode}
             period={period}
             onOpenRegionDetail={onOpenRegionDetail}
+            integratedDemo={integratedDemo}
           />
         ) : (
           <PriorityRanking
             period={period}
             selectedRegionCode={selectedRegionCode}
+            planRegions={planRegions}
             onSelectRegion={(code) => {
               focusRequest.current = 'preview'
               onSelectRegion(code)

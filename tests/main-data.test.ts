@@ -8,14 +8,14 @@ import {
 } from '../src/features/main/mocks'
 import { mainKeys } from '../src/features/main/hooks'
 
-test('연간/2월의 메인 지역·점수·순위·기간은 상세 목업과 일치한다', async () => {
+test('연간/2월의 메인 지역·점수·순위는 상세 목업과 일치한다', async () => {
   for (const month of [null, 2]) {
     const period = { year: 2025, month }
     const [dashboard, map] = await Promise.all([
       mockGetDashboard(period),
       mockGetDashboardMap(period),
     ])
-    assert.deepEqual(dashboard.period, { ...period, availableMonths: [null, 2] })
+    assert.deepEqual(dashboard.period, { ...period, availableMonths: [null, 2, 5] })
     assert.equal(dashboard.summary.totalRegions, 5)
     assert.equal(dashboard.summary.vulnerableRegions, 4)
     assert.equal(dashboard.summary.averageVulnerabilityScore, month === null ? 54 : 57)
@@ -70,7 +70,7 @@ test('미리보기는 추천 없음·현행 유지·낮은 신뢰도를 보존�
   assert.equal(low.reliability.low, true)
   assert.equal(low.recommendation?.lowReliability, true)
   assert.equal(low.header.score, 66)
-  assert.deepEqual(low.period, { ...period, availableMonths: [null, 2] })
+  assert.deepEqual(low.period, { ...period, availableMonths: [null, 2, 5] })
 })
 
 test('캐시 키는 기간과 선택 지역을 구분한다', () => {

@@ -5,7 +5,7 @@ import { CloseIcon } from '@/shared/components/icons'
 import { USE_MOCK } from '@/shared/api/mock'
 import { vulnerabilityLevels } from '../map/vulnerability'
 
-export function MethodologyPopover() {
+export function MethodologyPopover({ isSchematic = USE_MOCK }: { isSchematic?: boolean }) {
   const id = useId()
 
   return (
@@ -44,6 +44,8 @@ export function MethodologyPopover() {
             <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
               <dt className="font-bold text-gray-90">분석 단위</dt>
               <dd>읍·면·동</dd>
+              <dt className="font-bold text-gray-90">지도 기준</dt>
+              <dd>{isSchematic ? '시연용 가상 지도' : '용인시 행정동 지도'}</dd>
               <dt className="font-bold text-gray-90">점수 방향</dt>
               <dd>높을수록 취약</dd>
               <dt className="font-bold text-gray-90">데이터 출처</dt>
@@ -68,8 +70,7 @@ export function MethodologyPopover() {
             </div>
             {USE_MOCK && (
               <p className="border-t border-gray-10 pt-3 text-xs text-gray-50">
-                현재 화면의 점수는 시연용 목업입니다. 지도 경계·위치·면적은 가상 도식이며 실제
-                행정경계가 제공되면 교체합니다.
+                현재 화면의 점수는 시연용 목업입니다.
               </p>
             )}
           </div>

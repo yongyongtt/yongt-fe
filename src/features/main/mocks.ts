@@ -7,6 +7,7 @@ import { ApiError } from '@/shared/api/client'
 import type { Period } from '@/shared/hooks/usePeriodParams'
 import type { Dashboard, DashboardMap, RegionPreview } from './types'
 import { getPriorityRegions } from './preview'
+import { getIntegratedPlansMock, integratedPlansMockMonth } from './integrated-plans/data'
 
 /** 상세 목업에서 지원하는 코드만 사용. 내용과 기간 검증은 기존 조회 함수를 재사용한다. */
 const REGION_CODES = ['4146134000', '4146135000', '4146136000', '4146125000', '4146551000'] as const
@@ -18,7 +19,10 @@ export const MAIN_MOCK_NOTICE =
 const mockPeriod = ({ year, month }: Period) => ({
   year,
   month,
-  availableMonths: MOCK_AVAILABLE_MONTHS,
+  availableMonths:
+    integratedPlansMockMonth === undefined
+      ? MOCK_AVAILABLE_MONTHS
+      : [...MOCK_AVAILABLE_MONTHS, integratedPlansMockMonth],
 })
 
 async function getOverviews(period: Period) {
@@ -26,6 +30,14 @@ async function getOverviews(period: Period) {
 }
 
 export async function mockGetDashboard(period: Period): Promise<Dashboard> {
+  const demo = getIntegratedPlansMock(period)
+  if (demo) {
+    return {
+      period: mockPeriod(period),
+      summary: demo.dashboard.summary,
+      topRegions: getPriorityRegions(demo.dashboard.regions),
+    }
+  }
   const overviews = await getOverviews(period)
   const regions = overviews.map(({ header }) => header)
 
@@ -47,6 +59,8 @@ export async function mockGetDashboard(period: Period): Promise<Dashboard> {
 }
 
 export async function mockGetDashboardMap(period: Period): Promise<DashboardMap> {
+  const demo = getIntegratedPlansMock(period)
+  if (demo) return { period: mockPeriod(period), regions: demo.dashboard.regions }
   const overviews = await getOverviews(period)
   return { period: mockPeriod(period), regions: overviews.map(({ header }) => header) }
 }
@@ -56,7 +70,10 @@ export async function mockGetRegionPreview(
   period: Period,
 ): Promise<RegionPreview> {
   // 지역/기간 오류가 추천 없음으로 덮이지 않도록 overview부터 검증한다.
-  const overview = await mockGetOverview(regionCode, period)
+  const demo = getIntegratedPlansMock(period)
+  // 5월의 점수·순위는 비교 예시에서, 진단과 추천은 기존 연간 목업에서 가져온다.
+  const overviewPeriod = demo ? { year: period.year, month: null } : period
+  const overview = await mockGetOverview(regionCode, overviewPeriod)
   let recommendation: RegionPreview['recommendation']
   try {
     recommendation = await mockGetRecommendation(regionCode, period.year)
@@ -65,8 +82,10 @@ export async function mockGetRegionPreview(
     recommendation = null
   }
   return {
-    header: overview.header,
+    header:
+      demo?.dashboard.regions.find((region) => region.regionCode === regionCode) ?? overview.header,
     period: mockPeriod(period),
+    ...(demo ? { typePeriod: mockPeriod(overviewPeriod) } : {}),
     type: overview.type,
     reliability: overview.reliability,
     recommendation,
