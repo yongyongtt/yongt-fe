@@ -2,11 +2,52 @@ import { USE_MOCK } from '@/shared/api/mock'
 import type { Period } from '@/shared/hooks/usePeriodParams'
 import fixture from './integrated-plans.mock.json'
 
-export type Plan = (typeof fixture.plans)[number]
-export type PlanRegion = Plan['regions'][number]
-export type PlanMode = keyof Plan['summary']['modeCounts']
+type MockPlan = (typeof fixture.plans)[number]
+export type PlanMode = keyof MockPlan['summary']['modeCounts']
+export type PlanMapRegion = {
+  regionCode: string
+  categoryName?: string
+  status: 'INCLUDED' | 'OVER_BUDGET' | 'KEEP' | 'INELIGIBLE'
+  mode: PlanMode | null
+}
+export type PlanRegion = PlanMapRegion & {
+  estimatedCost: number | null
+  rank: number | null
+  inclusionOrder: number | null
+  excludeReason?: string | null
+  vehicleCount?: number | null
+  action?: string
+  regionName?: string
+  gu?: string
+  score?: number | null
+  budgetLeftAtSkip?: number
+}
+export type Plan = {
+  summary: Omit<MockPlan['summary'], 'modeCounts'> & {
+    sortBasis?: string
+    budgetLeft?: number
+    estimateDays?: number
+    skippedCount?: number
+  }
+  regions: PlanRegion[]
+}
+export type IntegratedPlans = {
+  plans: Plan[]
+  mapByPlan: ReadonlyMap<number, PlanMapRegion[]>
+  estimateDays?: number
+}
 
-const mockData = USE_MOCK ? fixture : null
+export function getIncludedPlanRegions(plan: Plan) {
+  return plan.regions
+    .filter(
+      (region): region is PlanRegion & { inclusionOrder: number } =>
+        region.status === 'INCLUDED' && region.inclusionOrder !== null,
+    )
+    .toSorted((a, b) => a.inclusionOrder - b.inclusionOrder)
+}
+
+// TypeScript widens string literals imported from JSON.
+const mockData = USE_MOCK ? (fixture as typeof fixture & { plans: Plan[] }) : null
 
 export function getIntegratedPlansMock({ year, month }: Period) {
   return mockData && year === mockData.period.year && month === mockData.period.month
@@ -48,7 +89,7 @@ export const planStyles = {
     text: 'fill-gray-90',
   },
   INELIGIBLE: {
-    label: '대상 제외',
+    label: '기타 미포함',
     fill: 'fill-white',
     badge: 'bg-gray-5 text-gray-70',
     swatch: 'border border-gray-50 bg-white',
@@ -56,7 +97,7 @@ export const planStyles = {
   },
 }
 
-export function getPlanRegionStyle(region?: PlanRegion) {
+export function getPlanRegionStyle(region?: PlanMapRegion) {
   switch (region?.status) {
     case 'INCLUDED':
       return planStyles[planModes.find((mode) => mode === region.mode) ?? 'INELIGIBLE']

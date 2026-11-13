@@ -3,6 +3,7 @@ import test from 'node:test'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { DashboardRightPanel } from '../src/features/main/components/DashboardRightPanel'
+import type { PlanMapRegion } from '../src/features/main/integrated-plans/data'
 import { RegionPreviewContent } from '../src/features/main/components/RegionPreviewContent'
 import { mainKeys } from '../src/features/main/hooks'
 import {
@@ -27,6 +28,7 @@ const renderPanel = (
   code: string | null,
   mode: 'ranking' | 'preview',
   selectedPeriod = period,
+  planRegions?: ReadonlyMap<string, PlanMapRegion>,
 ) =>
   renderToStaticMarkup(
     <QueryClientProvider client={client}>
@@ -36,9 +38,40 @@ const renderPanel = (
         mode={mode}
         onSelectRegion={noop}
         onBack={noop}
+        planRegions={planRegions}
       />
     </QueryClientProvider>,
   )
+
+test('통합 최적안 태그는 지역 코드로 연결하고 대시보드 순위와 점수는 유지한다', async () => {
+  const client = createClient()
+  const dashboard = await mockGetDashboard(period)
+  client.setQueryData(mainKeys.dashboard(period), dashboard)
+  const [first, second] = getPriorityRegions(dashboard.topRegions)
+  const planRegions = new Map<string, PlanMapRegion>([
+    [
+      second.regionCode,
+      { regionCode: second.regionCode, status: 'INCLUDED', mode: 'DRT', categoryName: '똑버스' },
+    ],
+    [
+      first.regionCode,
+      { regionCode: first.regionCode, status: 'OVER_BUDGET', mode: null, categoryName: '예산 밖' },
+    ],
+  ])
+  const markup = renderPanel(client, null, 'ranking', period, planRegions)
+  assert.ok(
+    markup.includes(
+      `${first.regionName} · ${first.gu} · ${first.score}점 · ${first.rank}위 · 예산 밖`,
+    ),
+  )
+  assert.ok(
+    markup.includes(
+      `${second.regionName} · ${second.gu} · ${second.score}점 · ${second.rank}위 · 똑버스`,
+    ),
+  )
+  assert.ok(markup.indexOf(first.regionName) < markup.indexOf(second.regionName))
+  assert.match(markup, /TOP 10/)
+})
 
 test('목록 복귀는 선택과 지도 포커스 요청을 보존하고 같은 지역을 다시 열 수 있다', () => {
   assert.equal(initialSelection.mode, 'ranking')

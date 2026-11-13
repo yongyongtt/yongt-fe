@@ -7,13 +7,13 @@ import { cx } from '@/shared/utils/cx'
 import { useDashboard } from '../hooks'
 import { getPriorityRegions } from '../preview'
 import type { Period } from '@/shared/hooks/usePeriodParams'
-import { getPlanRegionStyle, type PlanRegion } from '../integrated-plans/data'
+import { getPlanRegionStyle, type PlanMapRegion } from '../integrated-plans/data'
 
 type PriorityRankingProps = {
   period: Period
   selectedRegionCode: string | null
   onSelectRegion: (code: string) => void
-  planRegions?: ReadonlyMap<string, PlanRegion>
+  planRegions?: ReadonlyMap<string, PlanMapRegion>
 }
 
 export function PriorityRanking({
@@ -52,16 +52,16 @@ export function PriorityRanking({
         ) : (
           <ol className="divide-y divide-gray-5">
             {regions.map((region, index) => {
-              const plan = planRegions
-                ? getPlanRegionStyle(planRegions.get(region.regionCode))
-                : undefined
+              const planRegion = planRegions?.get(region.regionCode)
+              const plan = planRegions ? getPlanRegionStyle(planRegion) : undefined
+              const categoryName = planRegion?.categoryName ?? plan?.label
               return (
                 <li key={region.regionCode} value={region.rank}>
                   <button
                     type="button"
                     data-region-code={region.regionCode}
                     aria-pressed={selectedRegionCode === region.regionCode}
-                    aria-label={`${region.regionName} · ${region.gu} · ${region.score}점 · ${region.rank}위${plan ? ` · ${plan.label}` : ''}`}
+                    aria-label={`${region.regionName} · ${region.gu} · ${region.score}점 · ${region.rank}위${categoryName ? ` · ${categoryName}` : ''}`}
                     onClick={() => onSelectRegion(region.regionCode)}
                     className="flex min-h-[57px] w-full items-center gap-2 px-4 py-3 text-left outline-none hover:bg-primary-5 focus-visible:bg-primary-5 focus-visible:ring-2 focus-visible:ring-primary-50 focus-visible:ring-inset sm:gap-3 sm:px-6"
                   >
@@ -95,7 +95,7 @@ export function PriorityRanking({
                               plan.badge,
                             )}
                           >
-                            {plan.label}
+                            {categoryName}
                           </span>
                         </span>
                       )}

@@ -18,7 +18,7 @@ import { MockRegionMap } from './MockRegionMap'
 import { RegionSearch } from './RegionSearch'
 import { MethodologyPopover } from './MethodologyPopover'
 import { cx } from '@/shared/utils/cx'
-import type { PlanRegion } from '../integrated-plans/data'
+import type { PlanMapRegion } from '../integrated-plans/data'
 
 type RegionMapCardProps = {
   period: Period
@@ -26,7 +26,8 @@ type RegionMapCardProps = {
   onSelectRegion: (regionCode: string) => void
   focusRequest?: MapFocusRequest | null
   integratedDemo?: boolean
-  planRegions?: ReadonlyMap<string, PlanRegion>
+  planRegions?: ReadonlyMap<string, PlanMapRegion>
+  showingPlan?: boolean
   onShowVulnerability?: () => void
   onShowPlan?: () => void
 }
@@ -38,6 +39,7 @@ export function RegionMapCard({
   focusRequest,
   integratedDemo = false,
   planRegions,
+  showingPlan = false,
   onShowVulnerability,
   onShowPlan,
 }: RegionMapCardProps) {
@@ -45,11 +47,19 @@ export function RegionMapCard({
   const boundaries = useMapBoundaries(useRealBoundaries)
   const shapes = useRealBoundaries ? (boundaries.data ?? []) : demoRegionShapes
   type Camera = { viewport: MapViewport; panMode: boolean; focusRequest: MapFocusRequest | null }
-  const [camera, setCamera] = useState<Camera>({
+  const initialCamera: Camera = {
     viewport: { ...INITIAL_VIEWPORT },
     panMode: false,
     focusRequest: null,
-  })
+  }
+  const [camera, setCamera] = useState(initialCamera)
+  const switchMapMode = (nextShowingPlan: boolean) => {
+    if (nextShowingPlan === showingPlan) return
+    const onSwitch = nextShowingPlan ? onShowPlan : onShowVulnerability
+    if (!onSwitch) return
+    setCamera(initialCamera)
+    onSwitch()
+  }
   // 외부 선택 요청은 표시할 지도 상태에 반영하고, 다음 지도 조작 시 저장한다.
   const resolveCamera = (current: Camera): Camera => {
     if (!focusRequest || current.focusRequest === focusRequest) return current
@@ -73,7 +83,6 @@ export function RegionMapCard({
     shapes.some((shape) => shape.regionCode === region.regionCode),
   )
   const selected = mappedRegions.find((region) => region.regionCode === selectedRegionCode)
-  const showingPlan = planRegions !== undefined
   const modeButton =
     'min-h-9 rounded-md border border-transparent px-3 py-1 text-sm break-keep focus-visible:outline-2 focus-visible:outline-primary-50 aria-pressed:border-primary-60 aria-pressed:bg-primary-5 aria-pressed:font-bold aria-pressed:text-primary-70 disabled:opacity-55'
 
@@ -81,7 +90,7 @@ export function RegionMapCard({
     <Card className="flex min-h-[480px] min-w-0 animate-fade-up flex-col [animation-delay:320ms] xl:min-h-[816px]">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-10 px-7 py-5">
         <h2 className="text-lg font-bold">{showingPlan ? '통합 최적안 지도' : '종합 취약도'}</h2>
-        {USE_MOCK && onShowPlan && (
+        {onShowPlan && (
           <div
             role="group"
             aria-label="지도 모드"
@@ -91,16 +100,15 @@ export function RegionMapCard({
               type="button"
               className={modeButton}
               aria-pressed={!showingPlan}
-              onClick={onShowVulnerability}
+              onClick={() => switchMapMode(false)}
             >
               종합 취약도
             </button>
             <button
               type="button"
-              className={cx(modeButton, 'enabled:hover:text-primary-70')}
+              className={cx(modeButton, 'hover:text-primary-70')}
               aria-pressed={showingPlan}
-              disabled={!integratedDemo}
-              onClick={onShowPlan}
+              onClick={() => switchMapMode(true)}
             >
               통합 최적안
             </button>
@@ -138,6 +146,11 @@ export function RegionMapCard({
           <EmptyState
             title="표시할 지역 도형이 없습니다."
             description="선택한 기간에 표시 가능한 지역 데이터 또는 연결된 경계가 없습니다."
+          />
+        ) : showingPlan && !planRegions ? (
+          <EmptyState
+            title="표시할 통합 최적안 지도가 없습니다."
+            description="아래 통합 최적안 섹션에서 조회 상태를 확인할 수 있습니다."
           />
         ) : (
           <>
