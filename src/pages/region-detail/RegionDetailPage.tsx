@@ -77,7 +77,7 @@ export function RegionDetailPage() {
               key={regionCode}
               regionCode={regionCode}
               regionName={regionName}
-              year={period.year}
+              period={period}
               className="animate-fade-up [animation-delay:380ms]"
             />
           </>

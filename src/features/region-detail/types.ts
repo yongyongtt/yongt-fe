@@ -17,6 +17,8 @@ export type RegionOverview = {
     rank: number
   }
   period: ApiPeriod
+  /** 유형 분류 기준 기간 */
+  typePeriod: ApiPeriod
   reliability: {
     low: boolean
     note: string | null
@@ -77,8 +79,8 @@ export type RecommendationOption = {
   isCurrent: boolean
   reasons: string[]
   facts: string[]
-  /** 형태 미정. 지금은 항상 null */
-  together: unknown
+  /** 추천 2가 있을 때만 문장, 없으면 null */
+  together: string | null
 }
 
 export type Recommendation = {
@@ -89,4 +91,21 @@ export type Recommendation = {
   reasons: string[]
   cautions: string[]
   lowReliability: boolean
+}
+
+/** API 9-2. GET /api/plans/map (통합 최적안 지도) */
+export type PlanCategory = 'BUS' | 'DRT' | 'HAPPY_TAXI' | 'SKIPPED' | 'KEEP' | 'NONE'
+
+export type PlanMap = {
+  period: ApiPeriod
+  /** 1·2·3안. 안마다 행정동 38곳 전체 */
+  plans: Array<{
+    plan: number
+    regions: Array<{
+      regionCode: string
+      category: PlanCategory
+      categoryName: string
+      status: 'INCLUDED' | 'SKIPPED' | 'NOT_CANDIDATE'
+    }>
+  }>
 }

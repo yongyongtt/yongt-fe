@@ -24,7 +24,10 @@ export function AlternativeDetail({ option, open, onClose, id }: AlternativeDeta
         open ? 'mt-4 grid-rows-[1fr] opacity-100' : 'mt-0 grid-rows-[0fr] opacity-0',
       )}
     >
-      <div className="overflow-hidden">{option && <Panel option={option} onClose={onClose} />}</div>
+      <div className="overflow-hidden">
+        {/* 다른 대안으로 바꾸면 key가 바뀌어 내려오는 애니메이션을 다시 함 */}
+        {option && <Panel key={option.mode} option={option} onClose={onClose} />}
+      </div>
     </div>
   )
 }
@@ -44,7 +47,7 @@ function Panel({ option, onClose }: { option: RecommendationOption; onClose: () 
     <section
       aria-label={`${option.name} ${isExcluded ? '제외 이유' : '상세'}`}
       className={cx(
-        'rounded-xl px-4 pt-4 pb-4 lg:px-[25px] lg:pt-[18px] lg:pb-6',
+        'animate-slide-down rounded-xl px-4 pt-4 pb-4 motion-reduce:animate-none lg:px-[25px] lg:pt-[18px] lg:pb-6',
         s.box,
         s.panelMobile,
       )}

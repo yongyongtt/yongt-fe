@@ -11,10 +11,11 @@ import {
 } from '@/shared/components/icons'
 import { Skeleton } from '@/shared/components/Skeleton'
 import { DESKTOP_QUERY, useMediaQuery } from '@/shared/hooks/useMediaQuery'
+import type { Period } from '@/shared/hooks/usePeriodParams'
 import { cx } from '@/shared/utils/cx'
-import { useRecommendation } from '../../hooks'
+import { usePlanInclusion, useRecommendation } from '../../hooks'
 import type { Recommendation, TransportMode } from '../../types'
-import { formatCreatedAt } from '../../utils/recommendation'
+import { formatCreatedAt, planChipLabel, type PlansByMode } from '../../utils/recommendation'
 import { AlternativeCard } from './AlternativeCard'
 import { AlternativeDetail } from './AlternativeDetail'
 import { BulletBox } from './BulletBox'
@@ -22,7 +23,7 @@ import { BulletBox } from './BulletBox'
 type AiSolutionCardProps = {
   regionCode: string
   regionName?: string
-  year: number
+  period: Period
   className?: string
 }
 
@@ -30,8 +31,12 @@ type AiSolutionCardProps = {
  AI 추천 해결방안 카드
  지역이 바뀌면 펼친 상태가 남지 않게 페이지에서 key={regionCode}로 씀
 */
-export function AiSolutionCard({ regionCode, regionName, year, className }: AiSolutionCardProps) {
-  const { data, isPending, isPlaceholderData, error, refetch } = useRecommendation(regionCode, year)
+export function AiSolutionCard({ regionCode, regionName, period, className }: AiSolutionCardProps) {
+  const { data, isPending, isPlaceholderData, error, refetch } = useRecommendation(
+    regionCode,
+    period,
+  )
+  const { data: plans } = usePlanInclusion(regionCode, period)
 
   return (
     <Card className={cx('px-5 pt-6 pb-6 lg:px-9 lg:pt-[34px] lg:pb-8', className)}>
@@ -53,12 +58,13 @@ export function AiSolutionCard({ regionCode, regionName, year, className }: AiSo
       ) : error ? (
         <ErrorBody error={error} onRetry={() => refetch()} />
       ) : (
-        // 연도를 바꾸면 불러오는 동안 흐리게, 새 결과가 오면 펼친 상태를 닫고 부드럽게 나타남
+        // 기간을 바꾸면 불러오는 동안 흐리게, 새 결과가 오면 펼친 상태를 닫고 부드럽게 나타남
         <div className={cx('transition-opacity duration-300', isPlaceholderData && 'opacity-50')}>
           <ResultBody
             key={`${data.createdAt}-${data.options.map((o) => o.mode + o.status).join()}`}
             data={data}
             regionName={regionName ?? '이 지역'}
+            plans={plans}
           />
         </div>
       )}
@@ -66,12 +72,18 @@ export function AiSolutionCard({ regionCode, regionName, year, className }: AiSo
   )
 }
 
-function ResultBody({ data, regionName }: { data: Recommendation; regionName: string }) {
+type ResultBodyProps = {
+  data: Recommendation
+  regionName: string
+  plans?: PlansByMode
+}
+
+function ResultBody({ data, regionName, plans }: ResultBodyProps) {
   const panelId = useId()
   // PC는 카드 줄 아래 상세 하나, 모바일은 누른 카드 바로 아래에 상세를 펼침
   const isDesktop = useMediaQuery(DESKTOP_QUERY)
   const [openMode, setOpenMode] = useState<TransportMode | null>(null)
-  // 닫히는 애니메이션 동안에도 내용을 보여 주려고 마지막에 연 대안을 따로 기억
+  // 닫히는 애니메이션 동안에도 내용을 보여주기 위해 마지막에 연 대안을 따로 기억
   const [shownMode, setShownMode] = useState<TransportMode | null>(null)
 
   const toggle = (mode: TransportMode) => {
@@ -115,6 +127,8 @@ function ResultBody({ data, regionName }: { data: Recommendation; regionName: st
               open={openMode === o.mode}
               onToggle={() => toggle(o.mode)}
               panelId={isDesktop ? panelId : `${panelId}-${o.mode}`}
+              // 통합안은 추천 수단만 씀
+              planLabel={o.status === 'RECOMMENDED' ? planChipLabel(plans?.[o.mode]) : null}
             />
             {!isDesktop && (
               <AlternativeDetail

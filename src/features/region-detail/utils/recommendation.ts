@@ -1,4 +1,4 @@
-import type { RecommendationOption } from '../types'
+import type { PlanMap, RecommendationOption, TransportMode } from '../types'
 
 export type OptionVariant = 'recommended' | 'excluded' | 'keep'
 
@@ -36,4 +36,24 @@ export function togetherLines(together: unknown): string[] {
 /** "2026-11-05 11:03" → "2026.11.05 11:03" */
 export function formatCreatedAt(createdAt: string) {
   return createdAt.replaceAll('-', '.')
+}
+
+/** 수단별로 이 지역이 포함된 안 번호 모음. 예) { DRT: [1, 3] } */
+export type PlansByMode = Partial<Record<TransportMode, number[]>>
+
+export function plansByMode(data: PlanMap, regionCode: string): PlansByMode {
+  const result: PlansByMode = {}
+  for (const { plan, regions } of data.plans) {
+    const region = regions.find((r) => r.regionCode === regionCode)
+    if (region?.status !== 'INCLUDED') continue
+    const { category } = region
+    if (category !== 'BUS' && category !== 'DRT' && category !== 'HAPPY_TAXI') continue
+    result[category] = [...(result[category] ?? []), plan].sort((a, b) => a - b)
+  }
+  return result
+}
+
+/** [1, 3] → "통합안 1·3안". 없으면 null */
+export function planChipLabel(plans: number[] | undefined) {
+  return plans?.length ? `통합안 ${plans.join('·')}안` : null
 }

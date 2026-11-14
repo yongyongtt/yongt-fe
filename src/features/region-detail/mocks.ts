@@ -1,7 +1,9 @@
 import { mockError, mockResponse } from '@/shared/api/mock'
 import type { Period } from '@/shared/hooks/usePeriodParams'
 import type {
+  ApiPeriod,
   ComparisonMetric,
+  PlanMap,
   Recommendation,
   RecommendationOption,
   RegionComparison,
@@ -17,6 +19,7 @@ import type {
  - 4146125000 포곡읍: AI 추천 없음 (404)
  - 4146551000 풍덕천1동: 현행 유지
  - 그 외 코드: 없는 지역 (404)
+ 통합안 칩: 원삼면 2안, 양지면 1·2·3안, 나머지 없음
  기간: 2025년 연간 + 2월만 있음. 그 외는 PERIOD_NOT_FOUND
  수치와 코드는 화면 확인용 가짜 값
 */
@@ -130,6 +133,12 @@ function checkPeriod(year: number, month: number | null) {
   return null
 }
 
+function toApiPeriod(year: number, month: number | null): ApiPeriod {
+  return month === null
+    ? { year, months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], type: 'YEAR_ALL' }
+    : { year, months: [month], type: 'MONTH' }
+}
+
 function findRegion(regionCode: string) {
   return REGIONS[regionCode] ?? null
 }
@@ -156,10 +165,8 @@ export function mockGetOverview(regionCode: string, { year, month }: Period) {
       score: isMonth ? region.score + 3 : region.score,
       rank: region.rank,
     },
-    period:
-      month === null
-        ? { year, months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], type: 'YEAR_ALL' }
-        : { year, months: [month], type: 'MONTH' },
+    period: toApiPeriod(year, month),
+    typePeriod: toApiPeriod(year, month),
     reliability:
       regionCode === CODE.baegam
         ? { low: true, note: LOW_RELIABILITY_NOTE }
@@ -385,4 +392,31 @@ function keepRecommendation(region: MockRegion): Recommendation {
     cautions: ['출퇴근 시간대 혼잡은 월별 데이터로 따로 확인이 필요해요.'],
     lowReliability: false,
   }
+}
+
+// ---------- API 9-2 ----------
+
+/** 지역코드 → 포함된 안 번호 (수단은 모두 똑버스) */
+const PLAN_INCLUDED: Record<string, number[]> = {
+  [CODE.wonsam]: [2],
+  [CODE.yangji]: [1, 2, 3],
+}
+
+export function mockGetPlanMap({ year, month }: Period) {
+  const periodError = checkPeriod(year, month)
+  if (periodError) return periodError
+
+  const data: PlanMap = {
+    period: toApiPeriod(year, month),
+    plans: [1, 2, 3].map((plan) => ({
+      plan,
+      regions: Object.keys(REGIONS).map((regionCode) => {
+        const included = PLAN_INCLUDED[regionCode]?.includes(plan)
+        return included
+          ? { regionCode, category: 'DRT', categoryName: '똑버스', status: 'INCLUDED' }
+          : { regionCode, category: 'NONE', categoryName: '기타 미포함', status: 'NOT_CANDIDATE' }
+      }),
+    })),
+  }
+  return mockResponse(data)
 }

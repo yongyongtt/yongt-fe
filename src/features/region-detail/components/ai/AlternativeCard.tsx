@@ -10,10 +10,18 @@ type AlternativeCardProps = {
   onToggle: () => void
   /** 펼쳐지는 상세 패널 id (스크린리더 연결용) */
   panelId: string
+  /** "통합안 1·3안". 없으면 칩 숨김 */
+  planLabel?: string | null
 }
 
 /** 대안 하나. 카드 전체가 버튼이라 누르면 아래 상세가 열리고 닫힘 */
-export function AlternativeCard({ option, open, onToggle, panelId }: AlternativeCardProps) {
+export function AlternativeCard({
+  option,
+  open,
+  onToggle,
+  panelId,
+  planLabel,
+}: AlternativeCardProps) {
   const variant = optionVariant(option)
   const s = VARIANT_STYLE[variant]
   const toggleLabel = open ? '접기' : variant === 'excluded' ? '제외 이유' : '자세히 보기'
@@ -37,6 +45,11 @@ export function AlternativeCard({ option, open, onToggle, panelId }: Alternative
         {option.isCurrent && (
           <span className="rounded-md border border-gray-20 bg-white px-2 text-xs leading-[26px] text-gray-60">
             현재 운영 중
+          </span>
+        )}
+        {planLabel && (
+          <span className="rounded-md bg-primary-70 px-2.5 text-[13px] leading-7 font-medium text-white">
+            {planLabel}
           </span>
         )}
       </span>
