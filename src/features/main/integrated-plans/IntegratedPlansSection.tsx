@@ -3,7 +3,14 @@ import { useId, useState } from 'react'
 import { Card } from '@/shared/components/Card'
 import { cx } from '@/shared/utils/cx'
 import type { DashboardRegion } from '../types'
-import { getIncludedPlanRegions, planModes, planStyles, type Plan, type PlanRegion } from './data'
+import {
+  getIncludedPlanRegions,
+  planModes,
+  planStyles,
+  type Plan,
+  type PlanMode,
+  type PlanRegion,
+} from './data'
 import comparisonInfo from './comparison-info.svg'
 import selectedPlanCheck from './selected-plan-check.svg'
 import unitCostInfo from './unit-cost-info.svg'
@@ -36,6 +43,11 @@ const hatch =
 function formatCost(won: number | null) {
   if (won === null) return '—'
   return won >= 10_000_000 ? `${decimal.format(won / 100_000_000)}억` : `${number.format(won)}원`
+}
+
+function formatLegendCost(won: number) {
+  if (won > 0 && won < 1_000_000) return '<0.01억'
+  return `${decimal.format(won / 100_000_000)}억`
 }
 
 function formatPopulation(population: number) {
@@ -246,8 +258,13 @@ function BudgetAllocation({
   const { planId, name, budget, totalCost, description } = plan.summary
   const included = getIncludedPlanRegions(plan)
   const remaining = plan.summary.budgetLeft ?? Math.max(0, budget - totalCost)
+  const remainingLabel = formatCost(remaining)
   const percentage = (amount: number) => (budget > 0 ? (amount / budget) * 100 : 0)
-  const usedModes = planModes.filter((mode) => included.some((region) => region.mode === mode))
+  const costByMode = new Map<PlanMode, number>()
+  for (const { mode, estimatedCost } of included) {
+    if (mode) costByMode.set(mode, (costByMode.get(mode) ?? 0) + (estimatedCost ?? 0))
+  }
+  const usedModes = planModes.filter((mode) => costByMode.has(mode))
   return (
     <Card className="@container min-w-0 space-y-5 p-4 lg:p-7">
       <header className="flex flex-wrap items-end justify-between gap-3">
@@ -291,32 +308,55 @@ function BudgetAllocation({
                 regionByCode.get(region.regionCode)?.regionName ??
                 region.regionCode
               const cost = formatCost(region.estimatedCost)
-              const label = `${region.inclusionOrder}순위 : ${name}`
+              const rank = `${region.inclusionOrder}순위`
+              const label = `${rank} : ${name}`
               return (
                 <div
                   key={region.regionCode}
                   title={`${label} · ${cost}`}
                   className={cx(
-                    'flex shrink-0 flex-col justify-center gap-0.5 overflow-hidden border-r-2 border-white px-1.5 text-center text-xs leading-tight whitespace-nowrap sm:px-2',
+                    '@container/segment grid min-w-0 shrink-0 place-items-center overflow-hidden border-r-2 border-white text-center text-xs leading-tight whitespace-nowrap',
                     mode ? planStyles[mode].swatch : 'bg-gray-70',
                   )}
                   style={{ width: `${percentage(region.estimatedCost ?? 0)}%` }}
                 >
-                  <strong className="truncate text-white">{label}</strong>
-                  <span className="text-white">{cost}</span>
+                  <span className="sr-only">
+                    {label} · {cost}
+                  </span>
+                  <div aria-hidden="true" className="max-w-full min-w-0 text-white">
+                    <strong className="hidden px-1 @min-[104px]/segment:block">{label}</strong>
+                    <strong className="hidden @min-[30px]/segment:block @min-[104px]/segment:hidden">
+                      {rank}
+                    </strong>
+                    <strong className="hidden text-[10px] @min-[12px]/segment:block @min-[30px]/segment:hidden">
+                      {region.inclusionOrder}
+                    </strong>
+                    <span className="hidden truncate text-[10px] @min-[32px]/segment:block @min-[104px]/segment:hidden">
+                      {name}
+                    </span>
+                    <span className="hidden truncate text-[10px] @min-[30px]/segment:block @min-[104px]/segment:text-xs">
+                      {cost}
+                    </span>
+                  </div>
                 </div>
               )
             })}
             {remaining > 0 && (
               <div
-                title={`남은 예산 ${formatCost(remaining)}`}
+                title={`남은 예산 ${remainingLabel}`}
+                aria-hidden="true"
                 className={cx(
-                  'grid place-items-center overflow-hidden px-1 text-center text-xs leading-tight text-gray-70',
+                  '@container/segment grid min-w-0 shrink-0 place-items-center overflow-hidden text-center text-xs leading-tight text-gray-70',
                   hatch,
                 )}
                 style={{ width: `${percentage(remaining)}%` }}
               >
-                <span>남은 {formatCost(remaining)}</span>
+                <span className="hidden whitespace-nowrap @min-[80px]/segment:block">
+                  남은 {remainingLabel}
+                </span>
+                <span className="hidden text-[10px] [text-orientation:upright] [writing-mode:vertical-rl] @min-[16px]/segment:block @min-[80px]/segment:hidden">
+                  남은 예산
+                </span>
               </div>
             )}
           </div>
@@ -329,12 +369,14 @@ function BudgetAllocation({
         {usedModes.map((mode) => (
           <li key={mode} className="flex items-center gap-1.5">
             <span aria-hidden className={cx('size-3 rounded-sm', planStyles[mode].swatch)} />
-            {planStyles[mode].label}
+            <span>
+              {planStyles[mode].label}({formatLegendCost(costByMode.get(mode) ?? 0)})
+            </span>
           </li>
         ))}
         <li className="flex items-center gap-1.5">
           <span aria-hidden className={cx('size-3 rounded-sm border border-gray-20', hatch)} />
-          남은 예산
+          <span>남은 예산({formatLegendCost(remaining)})</span>
         </li>
         <li className="text-gray-60">· 막대 길이 = {durationLabel} 비용</li>
       </ul>
@@ -465,7 +507,12 @@ function DeploymentTable({
                               planStyles[mode].badge,
                             )}
                           >
-                            {region.action || planStyles[mode].label}
+                            {region.action
+                              ? region.action.replace(
+                                  /^마을버스 경유 노선 증차\s*\((\d+대)\)$/,
+                                  '마을 버스 경유 노선 증차 $1',
+                                )
+                              : planStyles[mode].label}
                             {!region.action &&
                               region.vehicleCount != null &&
                               ` ${region.vehicleCount}대`}
