@@ -70,6 +70,16 @@
     }
   }
 
+  /* 대안 상세 내용이 위에서 내려옴 */
+  --animate-slide-down: slide-down 320ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  @keyframes slide-down {
+    from {
+      opacity: 0;
+      transform: translateY(-12px);
+    }
+  }
+
   /* 페이지 첫 등장. 순서는 [animation-delay:120ms] 같은 클래스로 */
   --animate-fade-up: fade-up 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-fade-in: fade-in 400ms ease-out both;
