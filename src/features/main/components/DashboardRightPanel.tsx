@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Card } from '@/shared/components/Card'
 import { EmptyState } from '@/shared/components/EmptyState'
 import { ApiError } from '@/shared/api/client'
@@ -96,15 +96,30 @@ export function DashboardRightPanel({
   const heading = useRef<HTMLHeadingElement>(null)
   const focusRequest = useRef<'preview' | 'ranking' | null>(null)
   const showingPreview = mode === 'preview' && selectedRegionCode !== null
+  // 패널 첫 등장(380ms 지연) 동안만 순위 행 등장을 늦춤
+  const [introDone, setIntroDone] = useState(false)
+  useEffect(() => {
+    const timer = setTimeout(() => setIntroDone(true), 400)
+    return () => clearTimeout(timer)
+  }, [])
+  // 첫 화면은 슬라이드 없이, 이후 전환부터 방향에 맞춰 밀려 들어옴
+  const [switched, setSwitched] = useState(false)
+  const [lastShowingPreview, setLastShowingPreview] = useState(showingPreview)
+  if (lastShowingPreview !== showingPreview) {
+    setLastShowingPreview(showingPreview)
+    setSwitched(true)
+  }
 
   useEffect(() => {
-    if (focusRequest.current === 'preview' && showingPreview) backButton.current?.focus()
+    // 초점만 옮기고 화면은 그대로 둠
+    if (focusRequest.current === 'preview' && showingPreview)
+      backButton.current?.focus({ preventScroll: true })
     if (focusRequest.current === 'ranking' && !showingPreview) {
       const row = Array.from(
         container.current?.querySelectorAll<HTMLButtonElement>('[data-region-code]') ?? [],
       ).find((button) => button.dataset.regionCode === selectedRegionCode)
       const target = row ?? heading.current
-      target?.focus()
+      target?.focus({ preventScroll: true })
     }
     focusRequest.current = null
   }, [showingPreview, selectedRegionCode])
@@ -157,23 +172,37 @@ export function DashboardRightPanel({
           </div>
         </div>
         {showingPreview ? (
-          <PreviewQuery
-            regionCode={selectedRegionCode}
-            period={period}
-            onOpenRegionDetail={onOpenRegionDetail}
-            integratedDemo={integratedDemo}
-            previewRankLabel={previewRankLabel}
-          />
+          <div
+            key="preview"
+            className={cx('flex min-h-0 flex-1 flex-col', switched && 'animate-slide-in-right')}
+          >
+            <PreviewQuery
+              regionCode={selectedRegionCode}
+              period={period}
+              onOpenRegionDetail={onOpenRegionDetail}
+              integratedDemo={integratedDemo}
+              previewRankLabel={previewRankLabel}
+            />
+          </div>
         ) : (
-          <PriorityRanking
-            period={period}
-            selectedRegionCode={selectedRegionCode}
-            planRegions={planRegions}
-            onSelectRegion={(code) => {
-              focusRequest.current = 'preview'
-              onSelectRegion(code)
-            }}
-          />
+          <div
+            key="ranking"
+            className={cx(
+              'flex min-h-0 flex-1 flex-col lg:flex-auto',
+              switched && 'animate-slide-in-left',
+            )}
+          >
+            <PriorityRanking
+              period={period}
+              selectedRegionCode={selectedRegionCode}
+              planRegions={planRegions}
+              enterDelay={introDone ? 0 : 380}
+              onSelectRegion={(code) => {
+                focusRequest.current = 'preview'
+                onSelectRegion(code)
+              }}
+            />
+          </div>
         )}
       </Card>
     </div>

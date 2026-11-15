@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import selectRegionIcon from '@/assets/main/select-region.svg'
 import { USE_MOCK } from '@/shared/api/mock'
 import { EmptyState } from '@/shared/components/EmptyState'
@@ -14,6 +15,8 @@ type PriorityRankingProps = {
   selectedRegionCode: string | null
   onSelectRegion: (code: string) => void
   planRegions?: ReadonlyMap<string, PlanMapRegion>
+  /** 행 등장 시작 지연(ms). 페이지 첫 등장 때만 패널 등장에 맞춰 늦춤 */
+  enterDelay?: number
 }
 
 export function PriorityRanking({
@@ -21,9 +24,14 @@ export function PriorityRanking({
   selectedRegionCode,
   onSelectRegion,
   planRegions,
+  enterDelay = 0,
 }: PriorityRankingProps) {
   const dashboard = useDashboard(period)
   const regions = getPriorityRegions(dashboard.data?.topRegions ?? [])
+  // 행이 처음 그려질 때의 지연으로 고정함. 등장 중에 지연이 바뀌면 애니메이션이 튐
+  const [fixedDelay, setFixedDelay] = useState<number | null>(null)
+  if (fixedDelay === null && regions.length > 0) setFixedDelay(enterDelay)
+  const delay = fixedDelay ?? enterDelay
 
   return (
     <>
@@ -56,14 +64,20 @@ export function PriorityRanking({
               const plan = planRegions ? getPlanRegionStyle(planRegion) : undefined
               const categoryName = planRegion?.categoryName ?? plan?.label
               return (
-                <li key={region.regionCode} value={region.rank}>
+                <li
+                  key={region.regionCode}
+                  value={region.rank}
+                  // 위에서부터 한 줄씩 차례로 등장
+                  className="animate-fade-up"
+                  style={{ animationDelay: `${delay + index * 50}ms` }}
+                >
                   <button
                     type="button"
                     data-region-code={region.regionCode}
                     aria-pressed={selectedRegionCode === region.regionCode}
                     aria-label={`${region.regionName} · ${region.gu} · ${region.score}점 · ${region.rank}위${categoryName ? ` · ${categoryName}` : ''}`}
                     onClick={() => onSelectRegion(region.regionCode)}
-                    className="flex min-h-[57px] w-full items-center gap-2 px-4 py-3 text-left outline-none hover:bg-primary-5 focus-visible:bg-primary-5 focus-visible:ring-2 focus-visible:ring-primary-50 focus-visible:ring-inset sm:gap-3 sm:px-6"
+                    className="flex min-h-[57px] w-full items-center gap-2 px-4 py-3 text-left transition-colors duration-200 outline-none hover:bg-primary-5 focus-visible:bg-primary-5 focus-visible:ring-2 focus-visible:ring-primary-50 focus-visible:ring-inset sm:gap-3 sm:px-6"
                   >
                     <span
                       className={cx(
@@ -111,7 +125,7 @@ export function PriorityRanking({
                         className="block h-full animate-bar-grow rounded-full bg-danger-50 transition-[width] duration-500"
                         style={{
                           width: `${region.score}%`,
-                          animationDelay: `${440 + index * 60}ms`,
+                          animationDelay: `${delay + 60 + index * 60}ms`,
                         }}
                       />
                     </span>

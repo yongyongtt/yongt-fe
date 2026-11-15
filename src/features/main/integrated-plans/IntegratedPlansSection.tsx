@@ -1,5 +1,6 @@
 import * as Popover from '@radix-ui/react-popover'
 import { useId, useState } from 'react'
+import { AnimatedNumber } from '@/shared/components/AnimatedNumber'
 import { Card } from '@/shared/components/Card'
 import { cx } from '@/shared/utils/cx'
 import type { DashboardRegion } from '../types'
@@ -107,7 +108,7 @@ export function IntegratedPlansSection({
 
   return (
     <section className="min-w-0 space-y-6 px-0 lg:px-6" aria-labelledby="integrated-plans-title">
-      <header className="flex flex-wrap items-end justify-between gap-4">
+      <header className="flex animate-fade-up flex-wrap items-end justify-between gap-4">
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-3">
             <h2
@@ -148,7 +149,7 @@ export function IntegratedPlansSection({
       </header>
 
       <div role="group" aria-label="최적안 비교" className="grid gap-6 md:grid-cols-3">
-        {plans.map((plan) => {
+        {plans.map((plan, index) => {
           const {
             planId,
             name,
@@ -166,8 +167,10 @@ export function IntegratedPlansSection({
               aria-label={`${planId}안 ${name}`}
               aria-pressed={selected}
               onClick={() => onSelect(plan)}
+              // 카드가 차례로 올라오고, 고를 때 테두리·그림자가 부드럽게 바뀜
+              style={{ animationDelay: `${80 + index * 70}ms` }}
               className={cx(
-                '@container flex min-w-0 flex-col gap-[18px] rounded-xl border bg-white px-3 pt-6 pb-5 text-left outline-none focus-visible:ring-2 focus-visible:ring-primary-50 focus-visible:ring-offset-2 lg:px-5 xl:px-7',
+                '@container flex min-w-0 animate-fade-up flex-col gap-[18px] rounded-xl border bg-white px-3 pt-6 pb-5 text-left transition-[border-color,box-shadow,translate] duration-200 outline-none hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-primary-50 focus-visible:ring-offset-2 lg:px-5 xl:px-7',
                 selected
                   ? 'border-primary-50 bg-linear-to-b from-primary-5 to-white shadow-md ring-1 ring-primary-50'
                   : 'border-gray-10 hover:border-primary-50',
@@ -186,11 +189,19 @@ export function IntegratedPlansSection({
                 <span
                   aria-hidden
                   className={cx(
-                    'ml-auto grid size-6 shrink-0 place-items-center rounded-full',
+                    'ml-auto grid size-6 shrink-0 place-items-center rounded-full transition-colors duration-200',
                     selected ? 'bg-primary-50' : 'border-2 border-gray-20',
                   )}
                 >
-                  {selected && <img src={selectedPlanCheck} width={14} height={14} alt="" />}
+                  {selected && (
+                    <img
+                      src={selectedPlanCheck}
+                      width={14}
+                      height={14}
+                      alt=""
+                      className="animate-dropdown-in"
+                    />
+                  )}
                 </span>
               </span>
               <span className="flex flex-col gap-1 break-keep">
@@ -216,7 +227,7 @@ export function IntegratedPlansSection({
         })}
       </div>
 
-      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid min-w-0 animate-fade-up gap-6 [animation-delay:300ms] xl:grid-cols-[minmax(0,1fr)_320px]">
         <BudgetAllocation
           plan={activePlan}
           regionByCode={regionByCode}
@@ -284,9 +295,12 @@ function BudgetAllocation({
           className="flex flex-wrap items-baseline gap-2 text-gray-60 tabular-nums"
         >
           <span className="text-sm">사용</span>
-          <strong className="text-2xl leading-none text-primary-50">{formatCost(totalCost)}</strong>
+          <strong className="text-2xl leading-none text-primary-50">
+            <AnimatedNumber value={totalCost} format={formatCost} />
+          </strong>
           <span className="text-xs">
-            / {budgetLabel} · {Math.round(percentage(totalCost))}%
+            / {budgetLabel} ·{' '}
+            <AnimatedNumber value={Math.round(percentage(totalCost))} format={(v) => `${v}%`} />
           </span>
         </p>
       </header>
@@ -300,7 +314,8 @@ function BudgetAllocation({
           tabIndex={0}
           className="overflow-x-auto rounded-lg border border-gray-10 focus-visible:outline-2 focus-visible:outline-primary-50"
         >
-          <div className="flex h-16 min-w-[680px] overflow-hidden">
+          {/* 안을 바꿀 때마다 막대가 왼쪽부터 다시 채워짐 */}
+          <div key={planId} className="flex h-16 min-w-[680px] animate-bar-reveal overflow-hidden">
             {included.map((region) => {
               const mode = transportMode(region)
               const name =
@@ -459,7 +474,7 @@ function DeploymentTable({
                 hidden={Boolean(id) && !expanded}
                 className="divide-y divide-gray-10 border-b border-gray-10"
               >
-                {rows.map((region) => {
+                {rows.map((region, index) => {
                   const dashboard = regionByCode.get(region.regionCode)
                   const score =
                     region.score === undefined ? (dashboard?.score ?? null) : region.score
@@ -469,7 +484,9 @@ function DeploymentTable({
                   return (
                     <tr
                       key={region.regionCode}
-                      className={cx(!isIncluded && 'bg-gray-5/65 text-gray-70')}
+                      // 안 전환·펼침 때 행이 위에서부터 차례로 나타남
+                      style={{ animationDelay: `${index * 40}ms` }}
+                      className={cx('animate-fade-in', !isIncluded && 'bg-gray-5/65 text-gray-70')}
                     >
                       <td className="px-4 py-3">
                         <span
@@ -565,7 +582,10 @@ function DeploymentTable({
             : `건너뛴 지역 보기 (${plan.summary.skippedCount ?? additionalRegions.length}곳)`}
           <span
             aria-hidden
-            className={cx('size-1.5 border-r border-b', expanded ? 'rotate-225' : 'rotate-45')}
+            className={cx(
+              'size-1.5 border-r border-b transition-transform duration-300',
+              expanded ? 'rotate-225' : 'rotate-45',
+            )}
           />
         </button>
       )}
@@ -606,7 +626,7 @@ function PlanComparison({
     })
     .toSorted((a, b) => (b.score ?? -1) - (a.score ?? -1))
   const activeColumn = (plan: Plan) =>
-    plan === activePlan ? 'bg-primary-5/55 text-primary-60' : ''
+    cx('transition-colors duration-300', plan === activePlan && 'bg-primary-5/55 text-primary-60')
   return (
     <Card className="flex min-w-0 flex-col gap-5 p-4 lg:px-6 lg:pt-6">
       <header className="space-y-2">
@@ -634,7 +654,7 @@ function PlanComparison({
                 scope="col"
                 aria-current={plan === activePlan || undefined}
                 className={cx(
-                  'rounded-t-lg py-2.5 font-medium',
+                  'rounded-t-lg py-2.5 font-medium transition-colors duration-300',
                   plan === activePlan && 'bg-primary-5 font-bold text-primary-60',
                 )}
               >
@@ -662,7 +682,7 @@ function PlanComparison({
                     {order != null ? (
                       <span
                         className={cx(
-                          'inline-grid size-[29px] place-items-center rounded-full font-bold',
+                          'inline-grid size-[29px] place-items-center rounded-full font-bold transition-colors duration-300',
                           plan === activePlan
                             ? 'bg-primary-50 text-white'
                             : 'border border-primary-10 text-primary-60',

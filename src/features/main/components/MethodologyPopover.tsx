@@ -10,7 +10,7 @@ export function MethodologyPopover({ isSchematic = USE_MOCK }: { isSchematic?: b
 
   return (
     <Popover.Root>
-      <Popover.Trigger className="flex h-9 shrink-0 items-center gap-2 rounded-md border border-gray-20 bg-white px-3.5 text-sm font-medium text-gray-90 hover:bg-gray-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-50 data-[state=open]:border-primary-50">
+      <Popover.Trigger className="flex h-9 shrink-0 items-center gap-2 rounded-md border border-gray-20 bg-white px-3.5 text-sm font-medium text-gray-90 transition-colors duration-200 hover:bg-gray-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-50 data-[state=open]:border-primary-50">
         <img src={methodologyIcon} alt="" aria-hidden className="shrink-0" />
         분석 기준
       </Popover.Trigger>
@@ -22,7 +22,7 @@ export function MethodologyPopover({ isSchematic = USE_MOCK }: { isSchematic?: b
           collisionPadding={16}
           aria-labelledby={`${id}-title`}
           aria-describedby={`${id}-notice`}
-          className="z-50 max-h-[min(32rem,var(--radix-popover-content-available-height))] w-[min(400px,calc(100vw-32px))] overflow-y-auto overscroll-contain rounded-lg border border-gray-20 bg-white shadow-lg shadow-gray-90/10 outline-none"
+          className="z-50 max-h-[min(32rem,var(--radix-popover-content-available-height))] w-[min(400px,calc(100vw-32px))] origin-(--radix-popover-content-transform-origin) overflow-y-auto overscroll-contain rounded-lg border border-gray-20 bg-white shadow-lg shadow-gray-90/10 outline-none data-[state=closed]:animate-dropdown-out data-[state=open]:animate-dropdown-in"
           onPointerDown={(event) => event.stopPropagation()}
           onKeyDown={(event) => event.stopPropagation()}
         >

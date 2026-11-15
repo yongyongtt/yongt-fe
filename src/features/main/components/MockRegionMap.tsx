@@ -1,4 +1,4 @@
-import { useId, useMemo, useRef, useState, type PointerEvent } from 'react'
+import { useEffect, useId, useMemo, useRef, useState, type PointerEvent } from 'react'
 import { cx } from '@/shared/utils/cx'
 import type { RegionShape } from '../map/demoRegionShapes'
 import { DEMO_MAP_VIEWBOX } from '../map/demoRegionShapes'
@@ -69,6 +69,19 @@ export function MockRegionMap({
     moved: boolean
   } | null>(null)
   const [dragging, setDragging] = useState(false)
+  // 배율이 바뀌는 동안 라벨을 숨김. 라벨 크기는 목표 배율 기준이라 이동 중엔 어긋남
+  const [zooming, setZooming] = useState(false)
+  const [lastScale, setLastScale] = useState(viewport.scale)
+  if (lastScale !== viewport.scale) {
+    setLastScale(viewport.scale)
+    setZooming(!dragging)
+  }
+  useEffect(() => {
+    if (!zooming) return
+    // transitionend를 놓쳐도 라벨이 다시 보이게 함
+    const timer = setTimeout(() => setZooming(false), 700)
+    return () => clearTimeout(timer)
+  }, [zooming, viewport.scale])
   const pointInMap = (event: PointerEvent<SVGSVGElement>) => {
     const matrix = event.currentTarget.getScreenCTM()
     return matrix
@@ -195,7 +208,19 @@ export function MockRegionMap({
                 : '실제 위치나 행정경계가 아닌 시연용 도형입니다. '}
             Tab 키로 지역을 탐색하고 Enter 또는 Space로 선택하세요.
           </desc>
-          <g transform={`translate(${viewport.tx} ${viewport.ty}) scale(${viewport.scale})`}>
+          <g
+            // 드래그 중엔 바로 따라오고, 그 외 이동·확대는 부드럽게 넘어감
+            className={cx(
+              !dragging &&
+                'transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none',
+            )}
+            style={{
+              transform: `translate(${viewport.tx}px, ${viewport.ty}px) scale(${viewport.scale})`,
+            }}
+            onTransitionEnd={(event) => {
+              if (event.target === event.currentTarget) setZooming(false)
+            }}
+          >
             {visibleShapes.map((shape) => {
               const region = byCode.get(shape.regionCode)!
               const style = planStyle(region.regionCode)
@@ -249,7 +274,14 @@ export function MockRegionMap({
               )
             })}
             {/* 지역 도형을 모두 그린 뒤 라벨을 올려 이웃 도형에 가리지 않게 한다. */}
-            <g data-map-labels="true" aria-hidden="true" className="pointer-events-none">
+            <g
+              data-map-labels="true"
+              aria-hidden="true"
+              className={cx(
+                'pointer-events-none transition-opacity duration-200',
+                isRealMap && zooming && 'opacity-0 duration-0',
+              )}
+            >
               {visibleShapes.map((shape) => {
                 const region = byCode.get(shape.regionCode)!
                 const level = getVulnerabilityLevel(region.score)
@@ -338,7 +370,7 @@ export function MockRegionMap({
       {planRegions ? (
         <ul
           aria-label="통합 최적안 지도 범례"
-          className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs text-gray-70"
+          className="mt-3 flex animate-fade-in flex-wrap gap-x-4 gap-y-2 text-xs text-gray-70"
         >
           {planLegendKeys.map((key) => {
             const style = planStyles[key]
@@ -351,7 +383,7 @@ export function MockRegionMap({
           })}
         </ul>
       ) : (
-        <div className="mt-3 w-[258px] max-w-full sm:pointer-events-none sm:absolute sm:bottom-4 sm:left-4 sm:mt-0 sm:max-w-[calc(100%-32px)]">
+        <div className="mt-3 w-[258px] max-w-full animate-fade-in sm:pointer-events-none sm:absolute sm:bottom-4 sm:left-4 sm:mt-0 sm:max-w-[calc(100%-32px)]">
           <VulnerabilityLegend />
         </div>
       )}
