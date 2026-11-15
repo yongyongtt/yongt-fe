@@ -95,7 +95,7 @@ export function DashboardPanels({ period, onOpenRegionDetail }: DashboardPanelsP
       </div>
       {showPlanMap &&
         (query.isPending ? (
-          <Card className="space-y-3 p-4 lg:p-7">
+          <Card className="animate-fade-up space-y-3 p-4 lg:p-7">
             <h2 className="text-2xl font-bold">통합 최적안</h2>
             <span className="sr-only" role="status">
               통합 최적안을 불러오는 중입니다.

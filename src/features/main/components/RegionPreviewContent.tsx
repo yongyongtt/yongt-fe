@@ -34,7 +34,7 @@ export function RegionPreviewContent({
       <div
         tabIndex={0}
         aria-label="선택 지역 AI 미리보기 내용"
-        className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-5 outline-none focus-visible:ring-2 focus-visible:ring-primary-50 focus-visible:ring-inset"
+        className="min-h-0 flex-1 animate-fade-in space-y-4 overflow-y-auto px-4 py-5 outline-none focus-visible:ring-2 focus-visible:ring-primary-50 focus-visible:ring-inset"
       >
         <div>
           <div className="flex flex-wrap items-center justify-between gap-2">

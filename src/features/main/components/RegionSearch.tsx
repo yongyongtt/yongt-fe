@@ -35,7 +35,7 @@ export function RegionSearch({ regions, disabled, onSelectRegion }: RegionSearch
       <label htmlFor={id} className="sr-only">
         구·읍·면·동 검색
       </label>
-      <div className="flex h-11 items-center gap-2.5 rounded-lg border border-gray-20 bg-white px-3.5 focus-within:border-primary-50 focus-within:ring-2 focus-within:ring-primary-10">
+      <div className="flex h-11 items-center gap-2.5 rounded-lg border border-gray-20 bg-white px-3.5 transition-[border-color,box-shadow] duration-200 focus-within:border-primary-50 focus-within:ring-2 focus-within:ring-primary-10">
         <img src={searchIcon} alt="" aria-hidden className="shrink-0" />
         <input
           id={id}
@@ -81,7 +81,7 @@ export function RegionSearch({ regions, disabled, onSelectRegion }: RegionSearch
         />
       </div>
       {expanded && (
-        <div className="absolute top-full left-0 mt-1 w-full rounded border border-gray-20 bg-white p-2 shadow-lg shadow-gray-90/10">
+        <div className="absolute top-full left-0 mt-1 w-full origin-top animate-dropdown-in rounded border border-gray-20 bg-white p-2 shadow-lg shadow-gray-90/10">
           <p className="px-2 pt-1 pb-2 text-xs font-bold text-gray-50">
             {query.trim()} · 읍·면·동 검색 결과
           </p>
@@ -98,7 +98,7 @@ export function RegionSearch({ regions, disabled, onSelectRegion }: RegionSearch
                 role="option"
                 aria-selected={index === activeIndex}
                 className={cx(
-                  'flex min-h-11 cursor-pointer items-center gap-2.5 rounded-sm border-b border-gray-10 px-2.5 py-2 text-sm last:border-0',
+                  'flex min-h-11 cursor-pointer items-center gap-2.5 rounded-sm border-b border-gray-10 px-2.5 py-2 text-sm transition-colors duration-150 last:border-0',
                   index === activeIndex ? 'bg-primary-5 font-bold' : 'hover:bg-gray-5',
                 )}
                 onPointerEnter={() => setActiveIndex(index)}

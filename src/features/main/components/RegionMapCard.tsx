@@ -84,18 +84,28 @@ export function RegionMapCard({
   )
   const selected = mappedRegions.find((region) => region.regionCode === selectedRegionCode)
   const modeButton =
-    'min-h-9 rounded-md border border-transparent px-3 py-1 text-sm break-keep focus-visible:outline-2 focus-visible:outline-primary-50 aria-pressed:border-primary-60 aria-pressed:bg-primary-5 aria-pressed:font-bold aria-pressed:text-primary-70 disabled:opacity-55'
+    'relative min-h-9 rounded-md border border-transparent px-3 py-1 text-sm break-keep transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-primary-50 aria-pressed:font-bold aria-pressed:text-primary-70 disabled:opacity-55'
 
   return (
     <Card className="flex min-h-[480px] min-w-0 animate-fade-up flex-col [animation-delay:320ms] xl:min-h-[816px]">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-10 px-7 py-5">
-        <h2 className="text-lg font-bold">{showingPlan ? '통합 최적안 지도' : '종합 취약도'}</h2>
+        <h2 key={String(showingPlan)} className="animate-fade-in text-lg font-bold">
+          {showingPlan ? '통합 최적안 지도' : '종합 취약도'}
+        </h2>
         {onShowPlan && (
           <div
             role="group"
             aria-label="지도 모드"
-            className="ml-auto flex rounded-lg border border-gray-10 bg-gray-5 p-0.5 text-gray-70"
+            className="relative ml-auto grid grid-cols-2 rounded-lg border border-gray-10 bg-gray-5 p-0.5 text-gray-70"
           >
+            {/* 선택 배경이 고른 버튼 쪽으로 미끄러짐 */}
+            <span
+              aria-hidden
+              className={cx(
+                'absolute inset-y-0.5 left-0.5 w-[calc(50%-2px)] rounded-md border border-primary-60 bg-primary-5 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]',
+                showingPlan && 'translate-x-full',
+              )}
+            />
             <button
               type="button"
               className={modeButton}

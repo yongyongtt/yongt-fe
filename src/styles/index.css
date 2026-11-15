@@ -111,6 +111,35 @@
       width: 0;
     }
   }
+
+  /* 메인 우측 패널 목록↔미리보기 전환 */
+  --animate-slide-in-right: slide-in-right 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-slide-in-left: slide-in-left 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  @keyframes slide-in-right {
+    from {
+      opacity: 0;
+      transform: translateX(24px);
+    }
+  }
+  @keyframes slide-in-left {
+    from {
+      opacity: 0;
+      transform: translateX(-24px);
+    }
+  }
+
+  /* 막대 묶음이 왼쪽부터 드러남 (통합 최적안 예산 막대) */
+  --animate-bar-reveal: bar-reveal 800ms cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  @keyframes bar-reveal {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
 }
 
 /* 페이지 본문 폭: 1920 화면 기준 1440px, 좁으면 양쪽 32px 여백 */
