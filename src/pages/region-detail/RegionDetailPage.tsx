@@ -1,59 +1,87 @@
-import { Link, useNavigate, useParams } from 'react-router'
-import { paths } from '@/app/paths'
+import { useParams } from 'react-router'
+import { AiSolutionCard } from '@/features/region-detail/components/ai/AiSolutionCard'
+import { CityCompareCard } from '@/features/region-detail/components/CityCompareCard'
+import { LowReliabilityBanner } from '@/features/region-detail/components/LowReliabilityBanner'
+import { RegionDetailError } from '@/features/region-detail/components/RegionDetailError'
+import { RegionHero } from '@/features/region-detail/components/RegionHero'
+import { TypeSummaryCard } from '@/features/region-detail/components/TypeSummaryCard'
+import { UnmatchedTrendCard } from '@/features/region-detail/components/UnmatchedTrendCard'
+import { useRegionOverview } from '@/features/region-detail/hooks'
 import { Card } from '@/shared/components/Card'
-import { HeroChip } from '@/shared/components/HeroChip'
-import { ChevronLeftIcon, HomeIcon } from '@/shared/components/icons'
-import { PageHero } from '@/shared/components/PageHero'
-import { PeriodSelect } from '@/shared/components/PeriodSelect'
 import { usePeriodParams } from '@/shared/hooks/usePeriodParams'
 
-/**
+/** 백엔드가 low만 주고 note를 비워 보냈을 때 쓰는 문구 */
+const DEFAULT_LOW_RELIABILITY_NOTE =
+  '이 지역은 택시 호출이 적어 지표 신뢰도가 낮습니다. 결과는 참고용으로만 확인해 주십시오.'
+
+/*
  동네 진단 상세.
- 지금은 틀만 있음.
- */
+ 카드 배치: 유형(전체 폭) / 시 평균 비교 + 미배차율 추이(반반) / AI 해결방안(전체 폭)
+ 모바일(lg 미만)은 모든 카드가 한 줄에 하나씩
+*/
 export function RegionDetailPage() {
   const { regionCode = '' } = useParams()
   const { period, setPeriod } = usePeriodParams()
-  const navigate = useNavigate()
+  const overview = useRegionOverview(regionCode, period)
+  const regionName = overview.data?.header.regionName
+  const reliability = overview.data?.reliability
 
   return (
     <>
-      <PageHero className="h-[217px]">
-        <Link
-          to={paths.main(period)}
-          aria-label="메인 대시보드로"
-          className="absolute top-[39px] text-white/80 hover:text-white"
-        >
-          <HomeIcon />
-        </Link>
+      <RegionHero
+        overview={overview.data}
+        updating={overview.isPlaceholderData}
+        period={period}
+        onPeriodChange={setPeriod}
+      />
 
-        <div className="flex items-center justify-between pt-[81px]">
-          <div className="flex items-center">
-            <button
-              type="button"
-              aria-label="뒤로 가기"
-              onClick={() => navigate(paths.main(period))}
-              className="flex size-12 items-center justify-center rounded-full border border-white/25 bg-white/12 text-white hover:bg-white/20"
-            >
-              <ChevronLeftIcon />
-            </button>
-            <h1 className="ml-4 text-[44px] leading-[53px] font-bold tracking-[-0.03em] text-white">
-              지역 {regionCode}
-            </h1>
-            <div className="ml-[23px] flex gap-2">
-              <HeroChip>구 이름</HeroChip>
-              <HeroChip variant="danger">종합 취약도 -점</HeroChip>
-              <HeroChip variant="light">우선순위 -위</HeroChip>
+      <div className="relative container-page -mt-9 flex flex-col gap-4 pb-12 lg:gap-6 lg:pb-[72px]">
+        {overview.error ? (
+          <Card className="animate-fade-up p-5 [animation-delay:160ms] lg:p-9">
+            <RegionDetailError
+              error={overview.error}
+              period={period}
+              onPeriodChange={setPeriod}
+              onRetry={() => overview.refetch()}
+            />
+          </Card>
+        ) : (
+          <>
+            {/* 카드는 위에서부터 차례로 올라오며 나타남 */}
+            <TypeSummaryCard
+              type={overview.data?.type}
+              period={period}
+              className="animate-fade-up [animation-delay:160ms]"
+            />
+            {reliability?.low && (
+              <LowReliabilityBanner
+                note={reliability.note ?? DEFAULT_LOW_RELIABILITY_NOTE}
+                className="animate-fade-up [animation-delay:200ms]"
+              />
+            )}
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6">
+              <CityCompareCard
+                regionCode={regionCode}
+                regionName={regionName}
+                period={period}
+                className="animate-fade-up [animation-delay:240ms]"
+              />
+              <UnmatchedTrendCard
+                regionCode={regionCode}
+                regionName={regionName}
+                year={period.year}
+                className="animate-fade-up [animation-delay:300ms]"
+              />
             </div>
-          </div>
-          <PeriodSelect period={period} onChange={setPeriod} months={[null, 2]} />
-        </div>
-      </PageHero>
-
-      <div className="relative container-page -mt-9 pb-[72px]">
-        <Card className="p-9">
-          <p className="text-lg font-bold">상세 카드 영역 (다음 단계에서 구현)</p>
-        </Card>
+            <AiSolutionCard
+              key={regionCode}
+              regionCode={regionCode}
+              regionName={regionName}
+              period={period}
+              className="animate-fade-up [animation-delay:380ms]"
+            />
+          </>
+        )}
       </div>
     </>
   )

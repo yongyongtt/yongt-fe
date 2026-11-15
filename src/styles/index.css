@@ -26,6 +26,16 @@
 
   --color-danger-5: #fdefec;
   --color-danger-50: #de3412;
+  --color-danger-60: #bd2c0f;
+
+  /* 메인 지도 시연용 취약도 단계. 실제 분석 구간/행정경계와 무관함. */
+  --color-map-heat-1: #fcdfd9;
+  --color-map-heat-2: #f7afa1;
+  --color-map-heat-3: #f48771;
+  --color-map-heat-5: #8a240f;
+
+  /* 사각지대 유형 이름 */
+  --color-type-name: #063a74;
 
   --color-success-5: #eaf6ec;
   --color-success-50: #228738;
@@ -33,21 +43,129 @@
   --color-warning-5: #fff3db;
   --color-warning-50: #ffb114;
 
+  /* AI 배지 그라데이션 시작색 (끝은 primary-50) */
+  --color-ai-from: #3fa654;
+
   /* 히어로(파란 배경) 전용 */
   --color-hero-from: #031f3f;
   --color-hero-via: #052b57;
   --color-hero-to: #0b50d0;
   --color-hero-sub: #bacbde; /* 기준 연도 같은 보조 글자 */
+  --color-hero-dot: #6b96c7; /* 브레드크럼 사이 점 */
+
+  /* 드롭다운·팝오버 열고 닫기 (animate-dropdown-in / animate-dropdown-out) */
+  --animate-dropdown-in: dropdown-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-dropdown-out: dropdown-out 120ms ease-in forwards;
+
+  @keyframes dropdown-in {
+    from {
+      opacity: 0;
+      transform: translateY(-6px) scale(0.97);
+    }
+  }
+  @keyframes dropdown-out {
+    to {
+      opacity: 0;
+      transform: translateY(-4px) scale(0.97);
+    }
+  }
+
+  /* 대안 상세 내용이 위에서 내려옴 */
+  --animate-slide-down: slide-down 320ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  @keyframes slide-down {
+    from {
+      opacity: 0;
+      transform: translateY(-12px);
+    }
+  }
+
+  /* 페이지 첫 등장. 순서는 [animation-delay:120ms] 같은 클래스로 */
+  --animate-fade-up: fade-up 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-fade-in: fade-in 400ms ease-out both;
+  --animate-hero-deco: hero-deco 1200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes hero-deco {
+    from {
+      opacity: 0;
+      transform: translateX(40px);
+    }
+  }
+
+  /* 막대가 0에서 원래 길이로 늘어남 */
+  --animate-bar-grow: bar-grow 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  @keyframes bar-grow {
+    from {
+      width: 0;
+    }
+  }
+
+  /* 메인 우측 패널 목록↔미리보기 전환 */
+  --animate-slide-in-right: slide-in-right 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-slide-in-left: slide-in-left 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  @keyframes slide-in-right {
+    from {
+      opacity: 0;
+      transform: translateX(24px);
+    }
+  }
+  @keyframes slide-in-left {
+    from {
+      opacity: 0;
+      transform: translateX(-24px);
+    }
+  }
+
+  /* 막대 묶음이 왼쪽부터 드러남 (통합 최적안 예산 막대) */
+  --animate-bar-reveal: bar-reveal 800ms cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  @keyframes bar-reveal {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
 }
 
 /* 페이지 본문 폭: 1920 화면 기준 1440px, 좁으면 양쪽 32px 여백 */
 @utility container-page {
-  width: min(1440px, 100% - 64px);
+  width: min(1440px, 100% - 32px);
   margin-inline: auto;
+
+  /* PC(lg 이상)는 양쪽 32px 여백 */
+  @media (width >= 64rem) {
+    width: min(1440px, 100% - 64px);
+  }
 }
 
 @layer base {
   body {
     @apply bg-white font-sans text-gray-90 antialiased;
+  }
+
+  /* '동작 줄이기'를 켠 사용자에게는 모든 애니메이션을 끔 */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-delay: 0ms !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }

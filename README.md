@@ -3,6 +3,8 @@
 용용톤 2팀 프론트엔드.
 메인 대시보드와 동네 진단 상세 두 화면으로 구성
 
+## 배포 주소: https://yongin-mobility-gap.vercel.app/
+
 - 디자인: Figma `용용톤 2팀` > 디자인 > 최종
 
 ## 기술 스택
@@ -34,10 +36,14 @@ npm run dev                  # http://localhost:5173
 
 ### 환경 변수 (`.env.local`)
 
-| 이름                    | 값                      | 설명                                             |
-| ----------------------- | ----------------------- | ------------------------------------------------ |
-| `VITE_USE_MOCK`         | `true` / `false`        | `true`면 목업 데이터, `false`면 실제 백엔드 호출 |
-| `VITE_API_PROXY_TARGET` | `http://localhost:8080` | 개발 서버가 `/api` 요청을 넘길 백엔드 주소       |
+| 이름                      | 값                      | 설명                                                     |
+| ------------------------- | ----------------------- | -------------------------------------------------------- |
+| `VITE_USE_MOCK`           | `true` / `false`        | `true`면 목업 데이터, `false`면 실제 백엔드 호출         |
+| `VITE_MOCK_REGION_DETAIL` | `true` / `false` / 빈칸 | 상세 페이지만 따로 지정. 빈칸이면 `VITE_USE_MOCK`을 따름 |
+| `VITE_API_PROXY_TARGET`   | `http://43.203.57.74`   | 개발 서버가 `/api` 요청을 넘길 백엔드 주소               |
+
+- 배포 사이트의 `/api` 요청은 `vercel.json`이 백엔드로 넘김 (백엔드 주소가 바뀌면 여기도 수정)
+- API 문서(Swagger): http://43.203.57.74/swagger-ui/index.html
 
 ## 브랜치 규칙
 
@@ -63,7 +69,6 @@ git push -u origin feature/main-map
 ```
 
 - 깃허브에서 작업 브랜치 → `develop`으로 PR
-- 다른 한 명이 확인 후 합침
 - 합친 브랜치는 삭제
 
 ### 커밋 메시지
@@ -87,14 +92,14 @@ src/
 ├─ pages/
 │  ├─ main/             # 메인 대시보드  ← 지도 담당
 │  ├─ region-detail/    # 동네 진단 상세 ← 상세 담당
-│  └─ not-found/
+│  └─ error/            # 404·오류 화면
 ├─ features/
 │  ├─ main/             # 메인 화면 조각 (컴포넌트, api, 타입, 목업) ← 지도 담당
 │  └─ region-detail/    # 상세 화면 조각 ← 상세 담당
 ├─ shared/              # 두 화면이 같이 쓰는 것 (수정 시 서로 알리기)
 │  ├─ api/              # client.ts(공통 요청), mock.ts(목업 도우미)
 │  ├─ components/       # Header, Footer, PageHero, PeriodSelect, HeroChip, Card, icons
-│  ├─ hooks/            # usePeriodParams (기간 ↔ URL)
+│  ├─ hooks/            # usePeriodParams (기간 ↔ URL), useMediaQuery (화면 크기)
 │  ├─ constants/        # 기본 연도 등
 │  └─ utils/
 ├─ assets/              # 로고, 히어로 그래픽
@@ -113,6 +118,7 @@ const { period, setPeriod } = usePeriodParams() // period = { year: 2025, month:
 ```
 
 - 월 목록은 백엔드 응답의 `availableMonths`로만 채움 (없는 달을 요청하면 404)
+- **메인 한정 임시 예외:** 백엔드 최신화로 API 1의 `availableYears`·`availableMonths`가 삭제되어, 조회 가능 기간 목록 API가 제공될 때까지 `src/features/main/period.ts`에 공지된 **2025년 전체·1~12월**을 설정한다. `period.months`는 현재 응답의 집계 대상 월이므로 선택 가능 목록으로 사용하지 않는다. 공통 기간 컴포넌트와 상세페이지는 이번 예외 적용 범위에 포함하지 않는다.
 
 ### 2. 페이지 이동은 `paths`로
 
@@ -128,6 +134,8 @@ navigate(paths.regionDetail(regionCode, period)) // /regions/4146134000?year=202
 ### 3. API 호출은 `apiGet` + 목업 분기
 
 - 백엔드 응답 `{ success, data, error }`에서 `apiGet`이 `data`만 꺼내 줌. 실패하면 `ApiError`(`code`, `status`)를 던짐
+- 실제 API 요청은 본문 수신까지 15초로 제한하며, 초과하면 요청을 중단하고 `TIMEOUT_ERROR`(`status: 0`)를 던짐. 기존 Query 설정에 따라 한 번 자동 재시도하므로 최종 오류 표시까지는 재시도 대기 시간을 포함해 약 31초가 걸릴 수 있음
+- HTTP 실패는 성공으로 처리하지 않음. 정상 형식의 백엔드 오류는 `code`·`message`·HTTP 상태를 그대로 전달하고, 그 외 HTTP 실패는 `HTTP_ERROR`, 성공 응답의 공통 형식 오류는 `INVALID_RESPONSE`, 성공 응답의 `data: null`은 `EMPTY_DATA`로 구분함. `data` 내부의 기능별 필드 검증은 각 기능에서 담당함
 - 각 기능의 `api.ts`에서 `USE_MOCK`이면 목업을, 아니면 `apiGet`을 부름
 
 ```ts
@@ -155,6 +163,8 @@ useQuery({ queryKey: ['dashboard', period], queryFn: () => fetchDashboard(period
 - 색은 토큰 이름으로: `text-gray-90`, `bg-primary-50`, `text-danger-50` (임의 hex 금지)
 - 본문 폭은 `container-page` 클래스 (1440px 가운데 정렬)
 - 상단 파란 영역은 `PageHero`, 기간 선택은 `PeriodSelect`, 흰 카드는 `Card`를 사용
+- 모바일 대응: 기본 클래스는 모바일, PC는 `lg:`(1024px 이상)로 덮어씀. 예: `px-5 lg:px-9`
+- CSS로 안 되는 경우(차트 옵션 등)만 `useMediaQuery(DESKTOP_QUERY)` 사용
 
 ## 메인 페이지 작업 안내 (지도)
 

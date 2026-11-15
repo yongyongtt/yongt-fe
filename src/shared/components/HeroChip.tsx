@@ -17,7 +17,7 @@ export function HeroChip({ children, variant = 'ghost' }: HeroChipProps) {
   return (
     <span
       className={cx(
-        'inline-flex h-[34px] items-center rounded-full border px-[13px] text-[15px] font-medium tracking-[-0.01em] whitespace-nowrap',
+        'inline-flex h-7 items-center rounded-full border px-2.5 text-[13px] font-medium tracking-[-0.01em] whitespace-nowrap lg:h-[34px] lg:px-[13px] lg:text-[15px]',
         variants[variant],
       )}
     >
